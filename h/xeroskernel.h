@@ -42,7 +42,9 @@ void           lidt(void);
 void           outb(unsigned int, unsigned char);
 void           set_evec(unsigned int xnum, unsigned long handler);
 
-
+extern void kmeminit(void);
+extern void *kmalloc(size_t size);
+extern int kfree(void *ptr);
 
 
 /* Anything you add must be between the #define and this comment */
