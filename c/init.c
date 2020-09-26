@@ -36,7 +36,7 @@ void initproc(void) /* The beginning */
 
   kprintf("Some sample output to illustrate different types of printing\n\n");
 
-  /* A busy wait to pause things on the screen, Change the value used 
+  /* A busy wait to pause things on the screen, Change the value used
      in the termination condition to control the pause
    */
 
