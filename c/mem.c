@@ -78,6 +78,30 @@ extern void *kmalloc(size_t size)
 
 extern int kfree(void *ptr)
 {
-    //stubs
+    // Grab the start of the allocated memory area
+    // ptr = dataStart[0]
+    // 
+    struct memHeader* header = (struct memHeader *) (ptr - sizeof (struct memHeader));
+
+    header->prev = NULL;
+    header->next = NULL;
+    header->sanityCheck = NULL;
+
+    /** 3 possible locations of head:
+     * 1. head = NULL
+     * 2. head address is larger
+     * 3. head address is smaller
+     **/
+    //1. just set head = header
+    head = head == NULL ? header : head;
+
+    //2. since head is start of free memory you can set 
+    header->next = head;
+    head->prev = header;
+    head = header;
+
+    //3. find the block of free memory where head is right before header
+    
+
     return 0;
 }
