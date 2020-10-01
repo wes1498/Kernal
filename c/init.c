@@ -34,24 +34,24 @@ void initproc(void) /* The beginning */
   kprintf("\n\nCPSC 415, 2020W1\n32 Bit Xeros -20.9.9 - Closer to beta \nLocated at: %x to %x\n",
           &entry, &end);
 
-  kprintf("Some sample output to illustrate different types of printing\n\n");
+  // kprintf("Some sample output to illustrate different types of printing\n\n");
 
-  /* A busy wait to pause things on the screen, Change the value used
-     in the termination condition to control the pause
-   */
+  // /* A busy wait to pause things on the screen, Change the value used
+  //    in the termination condition to control the pause
+  //  */
 
-  for (i = 0; i < 3000000; i++)
-    ;
+  // for (i = 0; i < 3000000; i++)
+  //   ;
 
-  /* Build a string to print) */
-  sprintf(str,
-          "This is the number -17 when printed signed %d unsigned %u hex %x and a string %s.\n      Sample printing of 1024 in signed %d, unsigned %u and hex %x.",
-          b, b, b, "Hello", a, a, a);
+  // /* Build a string to print) */
+  // sprintf(str,
+  //         "This is the number -17 when printed signed %d unsigned %u hex %x and a string %s.\n      Sample printing of 1024 in signed %d, unsigned %u and hex %x.",
+  //         b, b, b, "Hello", a, a, a);
 
-  /* Print the string */
+  // /* Print the string */
 
-  kprintf("\n\nThe %dstring is: \"%s\"\n\nThe formula is %d + %d = %d.\n\n\n",
-          a, str, a, b, a + b);
+  // kprintf("\n\nThe %dstring is: \"%s\"\n\nThe formula is %d + %d = %d.\n\n\n",
+  //         a, str, a, b, a + b);
 
   for (i = 0; i < 4000000; i++)
     ;
@@ -61,7 +61,23 @@ void initproc(void) /* The beginning */
   /* Add your code below this line and before next comment */
 
   kmeminit();
-  kmalloc(100);
+  print_list();
+
+  // void *m1 = kmalloc(62032);
+  // void *m1 = kmalloc(64);
+  void *m3 = kmalloc(262144);
+  // void *m3 = kmalloc(2 ^ 20);
+  void *m4 = kmalloc(512);
+  void *m5 = kmalloc(4096);
+  print_list();
+  kfree(m5);
+  print_list();
+  kfree(m4);
+  kfree(m3);
+  // kprintf("aftre freeing 62032\n");
+  print_list();
+
+  // kfree(m1);
   // init data struct for managerlist     (1)
   // init data struct for process queue   (2)
   // init data struct for interrupt table (3)
