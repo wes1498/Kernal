@@ -114,6 +114,45 @@ extern void *kmalloc(size_t size)
     return node_to_alloc->datastart;
 }
 
+void defragMemory(struct memHeader *node_to_free)
+{
+    // Defrag with left adjacent memory
+    // (previous_node) -> (node_to_free) -> ...
+    if (node_to_free->prev)
+    {
+        unsigned long size_of_prev = (unsigned long) node_to_free->prev + node_to_free->prev->size;
+        
+        if (size_of_prev == (unsigned long)node_to_free)
+        {
+            kprintf("here 1");
+            node_to_free->prev->size += node_to_free->size;
+            node_to_free->prev->next = node_to_free->next;
+            if (node_to_free->next)
+            {
+                node_to_free->next->prev = node_to_free->prev;
+            }
+            node_to_free = node_to_free->prev;
+        }
+    }
+    if (node_to_free->next)
+    {
+        unsigned long size_of_next = (unsigned long)node_to_free + node_to_free->size;
+        kprintf("size of next: %ld\n",size_of_next);
+        kprintf("size of nodetofree: %ld\n",node_to_free);
+        if (size_of_next == node_to_free->next)
+        {
+            kprintf("here 2");
+            node_to_free->size += node_to_free->next->size;
+            node_to_free->next = node_to_free->next->next;
+            if (node_to_free->next->next)
+            {
+                node_to_free->next->next->prev = node_to_free;
+            }
+            //node_to_free->next = node_to_free;
+        }
+    }
+}
+
 extern int kfree(void *ptr)
 {
     // Grab the start of the allocated memory area
@@ -140,14 +179,19 @@ extern int kfree(void *ptr)
             node_to_free->next = head_cpy;
             head_cpy->prev = node_to_free;
             head = node_to_free;
-            goto defrag;
+            defragMemory(node_to_free);
+            return 1;
+            //goto defrag;
         }
 
-        // deals with mem allocated after --->
-        while (head_cpy && head_cpy < node_to_free)
+        // deals with mem allocated after head pointer --->
+        while (head_cpy->next && head_cpy->next < node_to_free)
         {
             head_cpy = head_cpy->next;
         }
+        // head_cpy->next > node_to_free
+        //head_cpy ->  node_to_free (0x100) -> nextfree (head_cpy->next)(0x200) -> ...
+
         if (head_cpy->next)
         {
             // get reference of head_cpy->next
@@ -164,7 +208,7 @@ extern int kfree(void *ptr)
             head_cpy->next = node_to_free;
             node_to_free->prev = head_cpy;
         }
-        goto defrag;
+        defragMemory(node_to_free);
     }
     else
     {
@@ -188,35 +232,35 @@ extern int kfree(void *ptr)
     // head = node_to_free;
 
     //3. find the block of free memory where head is right before header
-defrag:
-    // Coalescing the memory
-    head_cpy = head;
+// defrag:
+//     // Coalescing the memory
+//     head_cpy = head;
 
-    int memory_address;
-    while (head_cpy->next)
-    {
-        memory_address = (unsigned long)head_cpy + head_cpy->size;
-        // coalesce memory on the right side of head_cpy-->
-        if (memory_address == (unsigned long)head_cpy->next)
-        {
-            struct memHeader *next = head_cpy->next;
-            head_cpy->size = head_cpy->size + next->size + 16;
-            head_cpy->next = next->next;
-            next->next->prev = head_cpy;
-        }
-        memory_address = (unsigned long)head_cpy + head_cpy->prev->size;
-        // // coalesce memory on the left side of head_cpy <--
-        if (memory_address == (unsigned long)head_cpy)
-        {
-            head_cpy->prev->size = head_cpy->prev->size + head_cpy->size + 16;
-            head_cpy->prev->next = head_cpy->next;
-            head_cpy->next->prev = head_cpy->prev;
-        }
+//     int memory_address;
+//     while (head_cpy->next)
+//     {
+//         memory_address = (unsigned long)head_cpy + head_cpy->size;
+//         // coalesce memory on the right side of head_cpy-->
+//         if (memory_address == (unsigned long)head_cpy->next)
+//         {
+//             struct memHeader *next = head_cpy->next;
+//             head_cpy->size = head_cpy->size + next->size + 16;
+//             head_cpy->next = next->next;
+//             next->next->prev = head_cpy;
+//         }
+//         memory_address = (unsigned long)head_cpy + head_cpy->prev->size;
+//         // // coalesce memory on the left side of head_cpy <--
+//         if (memory_address == (unsigned long)head_cpy)
+//         {
+//             head_cpy->prev->size = head_cpy->prev->size + head_cpy->size + 16;
+//             head_cpy->prev->next = head_cpy->next;
+//             head_cpy->next->prev = head_cpy->prev;
+//         }
 
-        head_cpy = head_cpy->next;
+//         head_cpy = head_cpy->next;
 
-        // coalesce memory on the left side <--
-    }
+//         // coalesce memory on the left side <--
+//     }
 
     return 1;
 }
