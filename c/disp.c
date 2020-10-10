@@ -3,20 +3,20 @@
 
 #include <xeroskernel.h>
 
-void initqueue(void);
-void init_PCBs(void);
+void initQueue(void);
+void initPCBs(void);
 //testing methods
-void test_queue(void);
-void print_readyQ(void);
+void testQueue(void);
+void printRreadyQueue(void);
 
-void ready_enqueue(struct pcb *proc);
-struct pcb *ready_dequeue(void);
+void readyEnqueue(struct pcb *proc);
+struct pcb *readyDequeue(void);
 struct pcb *next(void);
 
 struct pcb list_of_pcbs[MAX_PCB_SIZE];
 struct pcb *ready_queue;
 
-void test_queue()
+void testQueue()
 {
     // we'd have to figure out how to allocate these pcbs in our real implementation.
     // probably just have a while loop and check for list_of_pcbs[i]->state == STOPPED
@@ -27,48 +27,55 @@ void test_queue()
     struct pcb test3 = list_of_pcbs[2];
     test3.state = READY;
 
-    ready_enqueue(&test1);
-    ready_enqueue(&test2);
-    print_readyQ();
-    ready_dequeue();
-    print_readyQ();
+    readyEnqueue(&test1);
+    readyEnqueue(&test2);
+    printRreadyQueue();
+    readyDequeue();
+    printRreadyQueue();
 
-    ready_enqueue(&test3);
-    print_readyQ();
+    readyEnqueue(&test3);
+    printRreadyQueue();
+    readyDequeue();
+    readyDequeue();
+    
+    readyDequeue();
+    printRreadyQueue();
 }
 
-extern void initdispatch()
+extern void initDispatch()
 {
-    init_PCBs();
-    initqueue();
-    test_queue();
+    initPCBs();
+    initQueue();
+    testQueue();
 }
 
 extern void dispatch()
 {
-    struct pcb *process = next();
-    while (1)
-    {
+
+    for(struct pcb* process = next(); process;) {
+        process->state=RUNNING;
         // int request = contextswitch(process);
         int request = -1;
         switch (request)
         {
         case CREATE:
-            //create ()
+            //int create_process = create(sizeof(function args))
+            ready(process);
             break;
         case YIELD:
             ready(process);
             process = next();
             break;
         case STOP:
-            //cleanup(process)
+            //cleanup(process);
             process = next();
             break;
         }
+
     }
 }
 
-void initqueue()
+void initQueue()
 {
     // ready queue will be set to null. Logic will be, if a PCB enters the ready queue, we just set the value of ready queue to the mem location of that process.
     // and if more proceses get added to the queue, we just set the ready_queue->next to be that value and etc.
@@ -76,7 +83,7 @@ void initqueue()
     ready_queue = 0;
 }
 
-void init_PCBs()
+void initPCBs()
 {
     // init list_of_pcbs with dead process's
     for (int i = 0; i < MAX_PCB_SIZE; i++)
@@ -89,18 +96,20 @@ void init_PCBs()
 
 struct pcb *next()
 {
-    return ready_dequeue();
+    return readyDequeue();
 }
-extern int ready(void *proc)
+extern void ready(struct pcb *proc)
 {
-    // why is it returning an int?
-    ready_enqueue((struct pcb *)proc);
+    readyEnqueue(proc);
     return 1;
 }
 
-extern int cleanup(void *proc)
+extern void cleanup(struct pcb* proc)
 {
-    // what to do with thiss
+    kfree(proc->proc_stack);
+    proc->pid = NULL;
+    proc->next = 0;
+    proc->state = STOPPED;
     return 0;
 }
 
@@ -110,7 +119,7 @@ extern int cleanup(void *proc)
 ===================================== 
 */
 
-void ready_enqueue(struct pcb *proc)
+void readyEnqueue(struct pcb *proc)
 {
     // if ready queue is NOT empty
     if (ready_queue)
@@ -131,7 +140,7 @@ void ready_enqueue(struct pcb *proc)
     }
 }
 
-struct pcb *ready_dequeue()
+struct pcb *readyDequeue()
 {
     if (ready_queue)
     {
@@ -139,6 +148,7 @@ struct pcb *ready_dequeue()
         // then set queue to be queue->next
         struct pcb *proc_to_ret = ready_queue;
         ready_queue = ready_queue->next;
+        proc_to_ret->next = 0;
         return proc_to_ret;
     }
     else
@@ -149,7 +159,7 @@ struct pcb *ready_dequeue()
     }
 }
 
-void print_readyQ()
+void printRreadyQueue()
 {
     struct pcb *iter = ready_queue;
     int i = 0;

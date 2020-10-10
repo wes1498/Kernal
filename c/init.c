@@ -61,26 +61,27 @@ void initproc(void) /* The beginning */
   /* Add your code below this line and before next comment */
 
   kmeminit();
-  print_list();
+  // print_list();
 
   // void *m1 = kmalloc(62032);
   // void *m1 = kmalloc(64);
-  void *m3 = kmalloc(262144);
+  // void *m3 = kmalloc(262144);
   // void *m3 = kmalloc(2 ^ 20);
-  void *m4 = kmalloc(512);
-  void *m5 = kmalloc(4096);
-  print_list();
-  kfree(m5);
-  print_list();
-  kfree(m4);
-  kfree(m3);
+  // void *m4 = kmalloc(512);
+  // void *m5 = kmalloc(4096);
+  // print_list();
+  // kfree(m5);
+  // print_list();
+  // kfree(m4);
+  // kfree(m3);
   // kprintf("aftre freeing 62032\n");
-  print_list();
+  //print_list();
 
   // kfree(m1);
   // init data struct for managerlist     (1)
   // init data struct for process queue   (2)
   // init data struct for interrupt table (3)
+  initdispatch();
 
   for (i = 0; i < 2000000; i++)
     ;

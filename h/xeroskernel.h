@@ -55,7 +55,16 @@ void lidt(void);
 void outb(unsigned int, unsigned char);
 void set_evec(unsigned int xnum, unsigned long handler);
 
-struct CPU
+struct memHeader
+{
+    unsigned long size;
+    struct memHeader *prev;
+    struct memHeader *next;
+    char *sanityCheck;
+    unsigned char datastart[0];
+};
+
+struct cpu
 {
     int esp;
     int eip;
@@ -72,9 +81,25 @@ struct pcb
 {
     int pid;
     int state;
+    unsigned long esp;
     void *proc_stack;
     struct CPU *cpu_state;
     struct pcb *next;
+};
+
+struct context_frame {
+  unsigned int edi;
+  unsigned int esi;
+  unsigned int ebp;
+  unsigned int esp;
+  unsigned int ebx;
+  unsigned int edx;
+  unsigned int ecx;
+  unsigned int eax;
+  unsigned int iret_eip;
+  unsigned int iret_cs;
+  unsigned int eflags;
+  unsigned int interrupt_code;
 };
 
 extern void kmeminit(void);
@@ -85,8 +110,8 @@ void print_list(void);
 
 extern void initdispatch(void);
 extern void dispatch(void);
-extern int ready(void *);
-extern int cleanup(void *);
+extern void ready(struct pcb*);
+extern void cleanup(struct pcb*);
 
 // extern struct pcb *next(void);
 // extern struct void ready(struct pcb *);

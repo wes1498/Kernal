@@ -6,15 +6,6 @@
 extern long freemem; /* start of free memory (set in i386.c) */
 extern long maxaddr; /* max addr of kernel memory */
 
-struct memHeader
-{
-    unsigned long size;
-    struct memHeader *prev;
-    struct memHeader *next;
-    char *sanityCheck;
-    unsigned char datastart[0];
-};
-
 // dont know if this head is accessible outside of mem.c ??
 // or if we need it accessible outisde???
 struct memHeader *head;
