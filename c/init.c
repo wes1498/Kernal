@@ -3,88 +3,185 @@
 #include <i386.h>
 #include <xeroskernel.h>
 #include <xeroslib.h>
+// #include <assert.h>
 
 extern int entry(void); /* start of kernel image, use &start    */
 extern int end(void);   /* end of kernel image, use &end        */
 extern long freemem;    /* start of free memory (set in i386.c) */
 extern char *maxaddr;   /* max memory address (set in i386.c)	*/
 
-/************************************************************************/
-/***				NOTE:				      ***/
-/***								      ***/
-/***   This is where the system begins after the C environment has    ***/
-/***   been established.  Interrupts are initially DISABLED.  The     ***/
-/***   interrupt table has been initialized with a default handler    ***/
-/***								      ***/
-/***								      ***/
-/************************************************************************/
+#if RUNTESTS
+static void runTests(void);
+static void testMemoryManagement(void);
+static void testDispatch(void);
+static void testContextSwitch(void);
+static void testQueue(void);
+static void printRreadyQueue(void);
+static void printList(void);
+static int getFreeListSize(void);
 
-/*------------------------------------------------------------------------
- *  The init process, this is where it all begins...
- *------------------------------------------------------------------------
- */
+
+void runTests() {
+  kmeminit();
+  testMemoryManagement();
+  initdispatch();
+  testDispatch();
+  testContextSwitch();
+  
+}
+#endif
+/* START OF TEST CODE */
+#if RUNTESTS
+
+#define EAX 0xaaaa
+#define ECX 0xbbbb
+#define EDX 0xcccc
+#define EBX 0xdddd
+#define ESI 0xeeee
+#define EDI 0xffff
+
+extern struct memHeader* head;
+extern  long  freemem;
+
+struct pcb list_of_pcbs[MAX_PCB_SIZE];
+struct pcb *ready_queue;
+
+void testMemoryManagement() {
+
+  void *m1 = kmalloc(100);
+  void *m2 = kmalloc(100);
+  void *m3 = kmalloc(100);
+  void *m4 = kmalloc(100);
+  void *m5 = kmalloc(100);
+  void *m6 = NULL;
+  // Blocks [m5, HOLESTART], [HOLEEND, MAXADDR]
+  assert(getFreeListSize() == 2);
+  printList();
+  kfree(m1);
+  // Blocks [BEG, m2], [m5, HOLESTART], [HOLEEND, MAXADDR]
+  assert(getFreeListSize() == 3);
+
+  printList();
+  kfree(m2);
+  kfree(m3);
+  // Coalesce [BEG, m2] [m2, m3], [m3, m4] -> [BEG, m4]
+  // Blocks [BEG, m4], [m5, HOLESTART], [HOLEEND, MAXADDR]
+  assert(getFreeListSize() == 3);
+  kprint()
+  printList();
+  kfree(m5);
+  // Blocks [BEG, m4], [m4, m5], [m5, HOLESTART], [HOLEEND, MAXADDR]
+  assert(getFreeListSize() == 4);
+  assert(kfree(m6) == 0);
+  kfree(m4);
+
+}
+void testDispatch() {
+  testQueue();
+}
+
+void testContextSwitch() {
+  // if(!assert(next() == NULL)) {
+  //   kprintf("Assert no process in running queue. \n");
+  // }
+  // struct pcb 
+  // pcb* p = next();
+  // kmalloc(100);
+
+}
+
+void testQueue()
+{
+    // we'd have to figure out how to allocate these pcbs in our real implementation.
+    // probably just have a while loop and check for list_of_pcbs[i]->state == STOPPED
+    struct pcb test1 = list_of_pcbs[0];
+    test1.state = READY;
+    struct pcb test2 = list_of_pcbs[1];
+    test2.state = READY;
+    struct pcb test3 = list_of_pcbs[2];
+    test3.state = READY;
+
+    readyEnqueue(&test1);
+    readyEnqueue(&test2);
+    // 2 processes in queue (1, 2)
+    printRreadyQueue();
+    readyDequeue();
+    // 1 process in queue (2)
+    printRreadyQueue();
+
+    readyEnqueue(&test3);
+    // 2 processes in queue (2, 3)
+    printRreadyQueue();
+    readyDequeue();
+    readyDequeue();
+    // 0 processes in queue
+    printRreadyQueue();
+}
+
+void printHeader(struct memHeader *node)
+{
+    kprintf("Addr: %ld, Size: %ld, Prev: %ld, Next: %ld, SanityCheck: %ld\n", node, node->size, node->prev, node->next, node->sanityCheck);
+}
+
+int getFreeListSize()
+{
+  struct memHeader *node = head;
+  int count = 0;
+  while(node){
+    count++;
+    node = node->next;
+  }
+  return count;
+}
+
+void printList()
+{
+    int i = 0;
+    struct memHeader *node = head;
+    kprintf("--==--printing free mem list--==--\n");
+    while (node)
+    {
+        printHeader(node);
+        i++;
+        node = node->next;
+    }
+    kprintf("==List size: %d==\n", i);
+}
+
+
+void printRreadyQueue()
+{
+    struct pcb *iter = ready_queue;
+    int i = 0;
+    kprintf("====Queue====\n");
+
+    while (iter)
+    {
+        kprintf("Addr: %ld, state: %d, next: %ld\n",
+                iter,
+                iter->state,
+                iter->next);
+        iter = iter->next;
+        i++;
+    }
+    kprintf("====Queue size: %d====\n\n", i);
+}
+
+#endif
+
 void initproc(void) /* The beginning */
 {
-
-  char str[1024];
-  int a = sizeof(str);
-  int b = -17;
-  int i;
-
   kprintf("\n\nCPSC 415, 2020W1\n32 Bit Xeros -20.9.9 - Closer to beta \nLocated at: %x to %x\n",
           &entry, &end);
+  
+  #if RUNTESTS
+  runTests();
+  #endif
 
-  // kprintf("Some sample output to illustrate different types of printing\n\n");
-
-  // /* A busy wait to pause things on the screen, Change the value used
-  //    in the termination condition to control the pause
-  //  */
-
-  // for (i = 0; i < 3000000; i++)
-  //   ;
-
-  // /* Build a string to print) */
-  // sprintf(str,
-  //         "This is the number -17 when printed signed %d unsigned %u hex %x and a string %s.\n      Sample printing of 1024 in signed %d, unsigned %u and hex %x.",
-  //         b, b, b, "Hello", a, a, a);
-
-  // /* Print the string */
-
-  // kprintf("\n\nThe %dstring is: \"%s\"\n\nThe formula is %d + %d = %d.\n\n\n",
-  //         a, str, a, b, a + b);
-
-  for (i = 0; i < 4000000; i++)
-    ;
-  /* or just on its own */
-  kprintf(str);
-
-  /* Add your code below this line and before next comment */
 
   kmeminit();
-  // print_list();
 
-  // void *m1 = kmalloc(62032);
-  // void *m1 = kmalloc(64);
-  // void *m3 = kmalloc(262144);
-  // void *m3 = kmalloc(2 ^ 20);
-  // void *m4 = kmalloc(512);
-  // void *m5 = kmalloc(4096);
-  // print_list();
-  // kfree(m5);
-  // print_list();
-  // kfree(m4);
-  // kfree(m3);
-  // kprintf("aftre freeing 62032\n");
-  //print_list();
-
-  // kfree(m1);
-  // init data struct for managerlist     (1)
-  // init data struct for process queue   (2)
-  // init data struct for interrupt table (3)
-  initdispatch();
-
-  for (i = 0; i < 2000000; i++)
-    ;
+  initDispatch();
 
   /* Add all of your code before this comment and after the previous comment */
   /* This code should never be reached after you are done */

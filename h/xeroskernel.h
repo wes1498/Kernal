@@ -42,6 +42,10 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define YIELD 2
 #define STOP 3
 
+// TEST TOGGLER
+#define RUNTESTS 0
+
+
 /* Functions defined by startup code */
 
 void bzero(void *base, int cnt);
@@ -104,14 +108,15 @@ struct context_frame {
 
 extern void kmeminit(void);
 extern void *kmalloc(size_t size);
-extern int kfree(void *ptr);
+extern int kfree(void*);
+extern void defragMemory(struct memHeader*);
 
-void print_list(void);
-
-extern void initdispatch(void);
+extern void initDispatch(void);
 extern void dispatch(void);
 extern void ready(struct pcb*);
 extern void cleanup(struct pcb*);
+extern void readyEnqueue(struct pcb*);
+extern struct pcb* readyDequeue(void);
 
 // extern struct pcb *next(void);
 // extern struct void ready(struct pcb *);

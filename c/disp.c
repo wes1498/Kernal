@@ -5,10 +5,6 @@
 
 void initQueue(void);
 void initPCBs(void);
-//testing methods
-void testQueue(void);
-void printRreadyQueue(void);
-
 void readyEnqueue(struct pcb *proc);
 struct pcb *readyDequeue(void);
 struct pcb *next(void);
@@ -16,37 +12,12 @@ struct pcb *next(void);
 struct pcb list_of_pcbs[MAX_PCB_SIZE];
 struct pcb *ready_queue;
 
-void testQueue()
-{
-    // we'd have to figure out how to allocate these pcbs in our real implementation.
-    // probably just have a while loop and check for list_of_pcbs[i]->state == STOPPED
-    struct pcb test1 = list_of_pcbs[0];
-    test1.state = READY;
-    struct pcb test2 = list_of_pcbs[1];
-    test2.state = READY;
-    struct pcb test3 = list_of_pcbs[2];
-    test3.state = READY;
 
-    readyEnqueue(&test1);
-    readyEnqueue(&test2);
-    printRreadyQueue();
-    readyDequeue();
-    printRreadyQueue();
-
-    readyEnqueue(&test3);
-    printRreadyQueue();
-    readyDequeue();
-    readyDequeue();
-    
-    readyDequeue();
-    printRreadyQueue();
-}
 
 extern void initDispatch()
 {
     initPCBs();
     initQueue();
-    testQueue();
 }
 
 extern void dispatch()
@@ -101,7 +72,6 @@ struct pcb *next()
 extern void ready(struct pcb *proc)
 {
     readyEnqueue(proc);
-    return 1;
 }
 
 extern void cleanup(struct pcb* proc)
@@ -110,7 +80,6 @@ extern void cleanup(struct pcb* proc)
     proc->pid = NULL;
     proc->next = 0;
     proc->state = STOPPED;
-    return 0;
 }
 
 /* 
@@ -157,22 +126,4 @@ struct pcb *readyDequeue()
         kprintf("Queue is empty\n");
         return 0;
     }
-}
-
-void printRreadyQueue()
-{
-    struct pcb *iter = ready_queue;
-    int i = 0;
-    kprintf("====Queue====\n");
-
-    while (iter)
-    {
-        kprintf("Addr: %ld, state: %d, next: %ld\n",
-                iter,
-                iter->state,
-                iter->next);
-        iter = iter->next;
-        i++;
-    }
-    kprintf("====Queue size: %d====\n\n", i);
 }

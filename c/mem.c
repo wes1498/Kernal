@@ -11,25 +11,6 @@ extern long maxaddr; /* max addr of kernel memory */
 struct memHeader *head;
 
 /* Your code goes here */
-void print_header(struct memHeader *node)
-{
-    kprintf("Addr: %ld, Size: %ld, Prev: %ld, Next: %ld, SanityCheck: %ld\n", node, node->size, node->prev, node->next, node->sanityCheck);
-}
-
-void print_list(void)
-{
-    int i = 0;
-    struct memHeader *node = head;
-    kprintf("--==--printing free mem list--==--\n");
-    while (node)
-    {
-        print_header(node);
-        i++;
-        node = node->next;
-    }
-    kprintf("==List size: %d==\n", i);
-}
-
 extern void kmeminit(void)
 {
     /* init head */
@@ -130,7 +111,7 @@ void defragMemory(struct memHeader *node_to_free)
         unsigned long size_of_next = (unsigned long)node_to_free + node_to_free->size;
         kprintf("size of next: %ld\n",size_of_next);
         kprintf("size of nodetofree: %ld\n",node_to_free);
-        if (size_of_next == node_to_free->next)
+        if (size_of_next == (int)node_to_free->next)
         {
             kprintf("here 2");
             node_to_free->size += node_to_free->next->size;
@@ -206,52 +187,6 @@ extern int kfree(void *ptr)
         kprintf("address never allocated\n");
         return 0;
     }
-
-    // kprintf("head value: %ld, new_node value: %ld\n", head, node_to_free);
-
-    /** 3 possible locations of head:
-     * 1. head = NULL
-     * 2. head address is larger
-     * 3. head address is smaller
-     **/
-    //1. just set head = node_to_free
-    // head = (head == NULL) ? node_to_free : head;
-
-    // //2. since head is start of free memory you can set
-    // node_to_free->next = head;
-    // head->prev = node_to_free;
-    // head = node_to_free;
-
-    //3. find the block of free memory where head is right before header
-// defrag:
-//     // Coalescing the memory
-//     head_cpy = head;
-
-//     int memory_address;
-//     while (head_cpy->next)
-//     {
-//         memory_address = (unsigned long)head_cpy + head_cpy->size;
-//         // coalesce memory on the right side of head_cpy-->
-//         if (memory_address == (unsigned long)head_cpy->next)
-//         {
-//             struct memHeader *next = head_cpy->next;
-//             head_cpy->size = head_cpy->size + next->size + 16;
-//             head_cpy->next = next->next;
-//             next->next->prev = head_cpy;
-//         }
-//         memory_address = (unsigned long)head_cpy + head_cpy->prev->size;
-//         // // coalesce memory on the left side of head_cpy <--
-//         if (memory_address == (unsigned long)head_cpy)
-//         {
-//             head_cpy->prev->size = head_cpy->prev->size + head_cpy->size + 16;
-//             head_cpy->prev->next = head_cpy->next;
-//             head_cpy->next->prev = head_cpy->prev;
-//         }
-
-//         head_cpy = head_cpy->next;
-
-//         // coalesce memory on the left side <--
-//     }
 
     return 1;
 }
