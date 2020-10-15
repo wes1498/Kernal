@@ -42,9 +42,11 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define YIELD 2
 #define STOP 3
 
+// interupt code
+#define INTERRUPT_CODE 69
+
 // TEST TOGGLER
 #define RUNTESTS 0
-
 
 /* Functions defined by startup code */
 
@@ -68,17 +70,20 @@ struct memHeader
     unsigned char datastart[0];
 };
 
-struct cpu
+struct context_frame
 {
-    int esp;
-    int eip;
-    int eflags;
-    int edi;
-    int esi;
-    int edx;
-    int ecx;
-    int ebx;
-    int eax;
+    unsigned int edi;
+    unsigned int esi;
+    unsigned int ebp;
+    unsigned int esp;
+    unsigned int ebx;
+    unsigned int edx;
+    unsigned int ecx;
+    unsigned int eax;
+    unsigned int iret_eip;
+    unsigned int iret_cs;
+    unsigned int eflags;
+    unsigned int interrupt_code;
 };
 
 struct pcb
@@ -86,40 +91,39 @@ struct pcb
     int pid;
     int state;
     unsigned long esp;
+    void *proc_locn;
     void *proc_stack;
-    struct CPU *cpu_state;
+    struct context_frame context;
     struct pcb *next;
 };
-
-struct context_frame {
-  unsigned int edi;
-  unsigned int esi;
-  unsigned int ebp;
-  unsigned int esp;
-  unsigned int ebx;
-  unsigned int edx;
-  unsigned int ecx;
-  unsigned int eax;
-  unsigned int iret_eip;
-  unsigned int iret_cs;
-  unsigned int eflags;
-  unsigned int interrupt_code;
-};
-
+// mem.c prototypes
 extern void kmeminit(void);
 extern void *kmalloc(size_t size);
-extern int kfree(void*);
-extern void defragMemory(struct memHeader*);
+extern int kfree(void *);
+extern void defragMemory(struct memHeader *);
+
+// disp.c prototypes
+struct pcb list_of_pcbs[MAX_PCB_SIZE];
+struct pcb *ready_queue;
 
 extern void initDispatch(void);
 extern void dispatch(void);
-extern void ready(struct pcb*);
-extern void cleanup(struct pcb*);
-extern void readyEnqueue(struct pcb*);
-extern struct pcb* readyDequeue(void);
+extern void ready(struct pcb *);
+extern void cleanup(struct pcb *);
+extern void readyEnqueue(struct pcb *);
+extern struct pcb *readyDequeue(void);
 
-// extern struct pcb *next(void);
-// extern struct void ready(struct pcb *);
+// create.c prototypes
+extern int create(void (*func)(void), int stack);
+
+// ctws.c prototypes
+extern int contextSwitch(struct pcb *proc);
+void initContextSwitch(void);
+
+// syscall.c prototype
+extern int syscall(int call, ...);
+
+extern void printASMRegisters(void);
 
 /* Anything you add must be between the #define and this comment */
 #endif

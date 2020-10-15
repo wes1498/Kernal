@@ -9,11 +9,6 @@ void readyEnqueue(struct pcb *proc);
 struct pcb *readyDequeue(void);
 struct pcb *next(void);
 
-struct pcb list_of_pcbs[MAX_PCB_SIZE];
-struct pcb *ready_queue;
-
-
-
 extern void initDispatch()
 {
     initPCBs();
@@ -23,10 +18,10 @@ extern void initDispatch()
 extern void dispatch()
 {
 
-    for(struct pcb* process = next(); process;) {
-        process->state=RUNNING;
-        // int request = contextswitch(process);
-        int request = -1;
+    for (struct pcb *process = next(); process;)
+    {
+        process->state = RUNNING;
+        int request = contextSwitch(process);
         switch (request)
         {
         case CREATE:
@@ -42,7 +37,6 @@ extern void dispatch()
             process = next();
             break;
         }
-
     }
 }
 
@@ -59,7 +53,7 @@ void initPCBs()
     // init list_of_pcbs with dead process's
     for (int i = 0; i < MAX_PCB_SIZE; i++)
     {
-        list_of_pcbs[i].pid = i;
+        list_of_pcbs[i].pid = i + 1;
         list_of_pcbs[i].state = STOPPED;
         list_of_pcbs[i].next = NULL;
     }
@@ -74,10 +68,12 @@ extern void ready(struct pcb *proc)
     readyEnqueue(proc);
 }
 
-extern void cleanup(struct pcb* proc)
+extern void cleanup(struct pcb *proc)
 {
-    kfree(proc->proc_stack);
-    proc->pid = NULL;
+    kfree(proc->proc_locn);
+    // proc->pid = NULL;
+    proc->proc_locn = 0;
+    proc->proc_stack = 0;
     proc->next = 0;
     proc->state = STOPPED;
 }

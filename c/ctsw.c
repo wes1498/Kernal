@@ -10,25 +10,26 @@
    assembly language conventions.
 */
 
-
 void _ISREntryPoint(void);
-static void __attribute__ ((used)) *k_stack;
+static void __attribute__((used)) * k_stack;
 static unsigned long ESP;
 
 // Setup the IDT to map interrupt INTERRUPT to _ISREntryPoint
-void initContextSwitch(void) {
-  set_evec(INTRMSG, (unsigned long) _ISREntryPoint);
+void initContextSwitch(void)
+{
+   set_evec(INTRMSG, (unsigned long)_ISREntryPoint);
 }
 
-extern int contextSwtich(struct pcb* proc) 
+extern int contextSwitch(struct pcb *proc)
 {
-   // set global process stack pointer  
+   // set global process stack pointer
    ESP = proc->esp;
 
    // set stack pointer to point to process context
-   struct context_frame* context = (struct context_frame*) ESP;
-      // save kernal context and kernal stack pointer
-      __asm __volatile( " \
+   struct context_frame *context = (struct context_frame *)ESP;
+
+   // save kernal context and kernal stack pointer
+   __asm __volatile(" \
          pushf \n\
          pusha \n\
          movl %%esp, k_stack \n\
@@ -43,13 +44,11 @@ extern int contextSwtich(struct pcb* proc)
          popa \n\
          popf \n\
             "
-         :
-         :
-         : "%eax"
-      );
+                    :
+                    :
+                    : "%eax");
    proc->esp = ESP;
-   context = (struct context_frame*) ESP;
+   context = (struct context_frame *)ESP;
 
-   
    return context->interrupt_code;
 }
