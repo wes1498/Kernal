@@ -3,7 +3,7 @@
 #include <i386.h>
 #include <xeroskernel.h>
 #include <xeroslib.h>
-// #include <assert.h>
+//#include <assert.h>
 
 extern int entry(void); /* start of kernel image, use &start    */
 extern int end(void);   /* end of kernel image, use &end        */
@@ -168,24 +168,29 @@ void printRreadyQueue()
 }
 
 #endif
+#define EAX 0xaaaa
+#define ECX 0xbbbb
+#define EDX 0xcccc
+#define EBX 0xdddd
+#define ESI 0xeeee
+#define EDI 0xffff
 
-extern void printASMRegisters(void)
+void populateRegisters(void)
 {
+  kprintf("we got here successfully2");
+  // populates the process registers with dummy values for testing
+  int ret;
+  __asm __volatile(" \
+      movl $0xaaaa, %%eax \n\
+      int $" xstr(INTERRUPT_CODE) "\n\
+      movl %%eax, %0 \n\
+        "
+                   : "=m"(ret)
+                   :
+                   : "%eax");
 
-  int eax = -2, ebx = -3;
-  __asm __volatile(" \
-    movl %%eax, %0 \n\
-                   "
-                   : "=m"(eax)
-                   :
-                   : "%eax");
-  __asm __volatile(" \
-    movl %%ebx, %0 \n\
-                   "
-                   : "=m"(ebx)
-                   :
-                   : "%eax");
-  kprintf("eax: %d, %ebx: %d\n", eax, ebx);
+  // systop returns from process to kernal
+  //sysstop();
 }
 
 void initproc(void) /* The beginning */
@@ -198,15 +203,23 @@ void initproc(void) /* The beginning */
 #endif
 
   kmeminit();
-  kprintf("hello1\n");
 
   initDispatch();
-  kprintf("hello2\n");
+  initContextSwitch();
 
-  create(0, 300);
-  kprintf("hello3\n");
+  int pid = create(populateRegisters, 0x1000);
+  kprintf("eip here is 0x%x\n", populateRegisters);
+  struct pcb *test_process = next();
+  //assert(pid == test_process->pid);
 
-  printASMRegisters();
+  int request = contextSwitch(test_process);
+  kprintf("here 2");
+  struct context_frame *context = (struct context_frame *)test_process->esp;
+  if (context->eax == EAX)
+  {
+    kprintf("we fucking did it");
+  }
+  cleanup(test_process);
   dispatch();
 
   /* Add all of your code before this comment and after the previous comment */

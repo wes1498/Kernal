@@ -25,12 +25,12 @@ extern int syscall(int call, ...)
 
         __asm __volatile(" \
             movl %1, %%eax \n\
-            movl %2, %%edx \n\
-            int %3 \n\
+            push %2 \n\
+            int $" xstr(INTERRUPT_CODE) " \n\
             movl %%eax, %0 \n\
                 "
                          : "=m"(output)
-                         : "m"(call), "m"(parameters), "i"(INTERRUPT_CODE)
+                         : "m"(call), "m"(parameters)
                          : "%eax");
         break;
     case (YIELD):
@@ -55,5 +55,5 @@ extern void sysyield()
 
 extern void sysstop()
 {
-    return;
+    syscall(STOP);
 }

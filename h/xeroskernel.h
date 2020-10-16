@@ -15,6 +15,8 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define EMPTY (-1)  /* an illegal gpq                */
 #define NULL 0      /* Null pointer for linked lists */
 #define NULLCH '\0' /* The null character            */
+#define xstr(s) str(s)
+#define str(s) #s
 
 /* Universal return constants */
 
@@ -90,10 +92,13 @@ struct pcb
 {
     int pid;
     int state;
+    // removed context struct because
+    // esp points to it/
+    // you can recover context by casting esp to the context struct
+    // context = (struct context_frame*) (proc_to_create->esp);
     unsigned long esp;
     void *proc_locn;
     void *proc_stack;
-    struct context_frame context;
     struct pcb *next;
 };
 // mem.c prototypes
@@ -109,6 +114,7 @@ struct pcb *ready_queue;
 extern void initDispatch(void);
 extern void dispatch(void);
 extern void ready(struct pcb *);
+extern struct pcb *next(void);
 extern void cleanup(struct pcb *);
 extern void readyEnqueue(struct pcb *);
 extern struct pcb *readyDequeue(void);
@@ -122,6 +128,9 @@ void initContextSwitch(void);
 
 // syscall.c prototype
 extern int syscall(int call, ...);
+extern unsigned int syscreate(void (*func)(void), int stack);
+extern void sysyield(void);
+extern void sysstop(void);
 
 extern void printASMRegisters(void);
 
