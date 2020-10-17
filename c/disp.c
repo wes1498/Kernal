@@ -5,9 +5,8 @@
 
 void initQueue(void);
 void initPCBs(void);
-void readyEnqueue(struct pcb *proc);
-struct pcb *readyDequeue(void);
-struct pcb *next(void);
+void readyEnqueue(pcb *proc);
+pcb *readyDequeue(void);
 
 extern void initDispatch()
 {
@@ -18,7 +17,7 @@ extern void initDispatch()
 extern void dispatch()
 {
 
-    for (struct pcb *process = next(); process;)
+    for (pcb *process = next(); process;)
     {
         process->state = RUNNING;
         int request = contextSwitch(process);
@@ -59,21 +58,20 @@ void initPCBs()
     }
 }
 
-struct pcb *next()
+pcb *next()
 {
     return readyDequeue();
 }
-extern void ready(struct pcb *proc)
+extern void ready(pcb *proc)
 {
     readyEnqueue(proc);
 }
 
-extern void cleanup(struct pcb *proc)
+extern void cleanup(pcb *proc)
 {
     kfree(proc->proc_locn);
     // proc->pid = NULL;
     proc->proc_locn = 0;
-    proc->proc_stack = 0;
     proc->next = 0;
     proc->state = STOPPED;
 }
@@ -84,7 +82,7 @@ extern void cleanup(struct pcb *proc)
 ===================================== 
 */
 
-void readyEnqueue(struct pcb *proc)
+void readyEnqueue(pcb *proc)
 {
     // if ready queue is NOT empty
     if (ready_queue)
@@ -105,13 +103,13 @@ void readyEnqueue(struct pcb *proc)
     }
 }
 
-struct pcb *readyDequeue()
+pcb *readyDequeue()
 {
     if (ready_queue)
     {
         // get reference to the first element (which is queue),
         // then set queue to be queue->next
-        struct pcb *proc_to_ret = ready_queue;
+        pcb *proc_to_ret = ready_queue;
         ready_queue = ready_queue->next;
         proc_to_ret->next = 0;
         return proc_to_ret;

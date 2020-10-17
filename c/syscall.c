@@ -17,28 +17,18 @@ extern int syscall(int call, ...)
     int parameters[2];
     int output;
 
-    switch (call)
-    {
-    case (CREATE):
-        parameters[0] = va_arg(valist, int);
-        parameters[1] = va_arg(valist, int);
+    parameters[0] = va_arg(valist, int);
+    parameters[1] = va_arg(valist, int);
 
-        __asm __volatile(" \
-            movl %1, %%eax \n\
-            push %2 \n\
-            int $" xstr(INTERRUPT_CODE) " \n\
-            movl %%eax, %0 \n\
-                "
-                         : "=m"(output)
-                         : "m"(call), "m"(parameters)
-                         : "%eax");
-        break;
-    case (YIELD):
-
-        break;
-    case (STOP):
-        break;
-    }
+    __asm __volatile(" \
+        movl %1, %%eax \n\
+        push %2 \n\
+        int %3 \n\
+        movl %%eax, %0 \n\
+            "
+                : "=m"(output)
+                : "m"(call), "m"(parameters), "i"(INTERRUPT_CODE)
+                : "%eax");
 
     return output;
 }

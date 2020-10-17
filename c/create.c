@@ -6,8 +6,8 @@
 /* Your code goes here. */
 extern int create(void (*func)(void), int stack)
 {
-    struct pcb *proc_to_create;
-    struct context_frame *context;
+    pcb *proc_to_create;
+    contextFrame *context;
     int i;
     for (i = 0; i < MAX_PCB_SIZE; i++)
     {
@@ -29,7 +29,7 @@ extern int create(void (*func)(void), int stack)
 
     // get reference to the end of the allocated memory with a buffer for proc_stack.
     // when casting to memHeader, the size of memHeader must be divided by 16 so that its 16-byte aligned.
-    struct memHeader *proc_header = (struct memHeader *)proc_pointer - sizeof(struct memHeader) / 16;
+    memHeader *proc_header = (memHeader *)proc_pointer - 1;
     int buffer = 64;
 
     // this is the pointer at the end of the memory location with a buffer.
@@ -37,8 +37,10 @@ extern int create(void (*func)(void), int stack)
 
     // set new process to READY state
     proc_to_create->state = READY;
+    stack_pointer -= sizeof(contextFrame);
+    proc_to_create->esp = (unsigned int) stack_pointer;
     // this sets the proc_to_create->esp context
-    context = (struct context_frame *)(proc_to_create->esp);
+    context = (contextFrame*)(proc_to_create->esp);
     // ::define the process context::
     context->edi = 0;
     context->esi = 0;
@@ -52,9 +54,7 @@ extern int create(void (*func)(void), int stack)
     context->iret_cs = getCS();
     context->eflags = 0x00003000;
 
-    // i dont think we need the esp field in pcb struct.
     proc_to_create->proc_locn = proc_pointer;
-    proc_to_create->proc_stack = stack_pointer;
     // put proc in ready_queue
     ready(proc_to_create);
     return proc_to_create->pid;

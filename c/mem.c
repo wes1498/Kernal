@@ -8,7 +8,7 @@ extern long maxaddr; /* max addr of kernel memory */
 
 // dont know if this head is accessible outside of mem.c ??
 // or if we need it accessible outisde???
-struct memHeader *head;
+memHeader *head;
 
 /* Your code goes here */
 extern void kmeminit(void)
@@ -16,17 +16,17 @@ extern void kmeminit(void)
     /* init head */
 
     // set mem address of head to point at freemem (defined in i386.c)
-    head = (struct memHeader *)freemem;
-    head->size = HOLESTART - freemem - sizeof(struct memHeader);
+    head = (memHeader *)freemem;
+    head->size = HOLESTART - freemem - sizeof(memHeader);
     // set next pointer to start of HOLEEND mem address
-    head->next = (struct memHeader *)HOLEEND;
+    head->next = (memHeader *)HOLEEND;
     head->prev = NULL;
     head->sanityCheck = NULL;
 
     /* init head->next */
     // 4mb - holeend
-    struct memHeader *next_node = head->next;
-    next_node->size = maxaddr - HOLEEND - sizeof(struct memHeader);
+    memHeader *next_node = head->next;
+    next_node->size = maxaddr - HOLEEND - sizeof(memHeader);
     next_node->next = NULL;
     next_node->prev = head;
     next_node->sanityCheck = NULL;
@@ -36,11 +36,11 @@ extern void *kmalloc(size_t size)
 {
     long amnt;
     // new_node is the next available free memory
-    struct memHeader *new_node;
+    memHeader *new_node;
 
     amnt = (size) / 16 + ((size % 16) ? 1 : 0);
-    amnt = amnt * 16 + sizeof(struct memHeader);
-    struct memHeader *node_to_alloc = head;
+    amnt = amnt * 16 + sizeof(memHeader);
+    memHeader *node_to_alloc = head;
 
     // loop until we find a mem spot thats big enough to hold size
     while (node_to_alloc && node_to_alloc->size < amnt)
@@ -58,7 +58,7 @@ extern void *kmalloc(size_t size)
     node_to_alloc->sanityCheck = (char *)node_to_alloc;
     // divide by 16 so it gets 16-byte aligned
     new_node = node_to_alloc + (amnt / 16);
-    new_node->size = (node_to_alloc->size - amnt) - sizeof(struct memHeader);
+    new_node->size = (node_to_alloc->size - amnt) - sizeof(memHeader);
     new_node->sanityCheck = 0;
 
     node_to_alloc->size = amnt;
@@ -86,7 +86,7 @@ extern void *kmalloc(size_t size)
     return node_to_alloc->datastart;
 }
 
-void defragMemory(struct memHeader *node_to_free)
+void defragMemory(memHeader *node_to_free)
 {
     // Defrag with left adjacent memory
     // (previous_node) -> (node_to_free) -> ...
@@ -113,7 +113,6 @@ void defragMemory(struct memHeader *node_to_free)
         kprintf("size of nodetofree: %ld\n",node_to_free);
         if (size_of_next == (int)node_to_free->next)
         {
-            kprintf("here 2");
             node_to_free->size += node_to_free->next->size;
             node_to_free->next = node_to_free->next->next;
             if (node_to_free->next->next)
@@ -130,10 +129,10 @@ extern int kfree(void *ptr)
     // Grab the start of the allocated memory area
     // ptr = dataStart[0]
     //
-    struct memHeader *node_to_free = (struct memHeader *)(ptr - sizeof(struct memHeader));
+    memHeader *node_to_free = (memHeader *)(ptr - sizeof(memHeader));
     kprintf("value of node_to_free: %ld\n", node_to_free);
-    struct memHeader *head_cpy = head;
-    struct memHeader *next_free;
+    memHeader *head_cpy = head;
+    memHeader *next_free;
 
     // use data structure to find if this address is a kmalloc'd address
     // kprintf("node_to_free->sanityCheck : %ld, node_to_free : %ld\n", node_to_free->sanityCheck, node_to_free);

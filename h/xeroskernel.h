@@ -15,11 +15,8 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define EMPTY (-1)  /* an illegal gpq                */
 #define NULL 0      /* Null pointer for linked lists */
 #define NULLCH '\0' /* The null character            */
-#define xstr(s) str(s)
-#define str(s) #s
 
 /* Universal return constants */
-
 #define OK 1        /* system call ok               */
 #define SYSERR -1   /* system call failed           */
 #define EOF -2      /* End-of-file (usu. from read)	*/
@@ -29,29 +26,28 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define BLOCKERR -5 /* non-blocking op would block  */
 #define LASTCONST -5
 
-/*
-    global vars definitions
-*/
+
+/* global vars definitions */
 #define MAX_PCB_SIZE 32
 #define MAX_PROC_SIZE 16
-// Process State values
+/* Process State values */
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
 #define STOPPED 4
-// System call values
+
+/* System call values */
 #define CREATE 1
 #define YIELD 2
 #define STOP 3
 
-// interupt code
+/* Interrupt Code */
 #define INTERRUPT_CODE 69
 
-// TEST TOGGLER
-#define RUNTESTS 0
+/* Test Toggle */
+#define RUNTESTS 1
 
 /* Functions defined by startup code */
-
 void bzero(void *base, int cnt);
 void bcopy(const void *src, void *dest, unsigned int n);
 void disable(void);
@@ -63,16 +59,17 @@ void lidt(void);
 void outb(unsigned int, unsigned char);
 void set_evec(unsigned int xnum, unsigned long handler);
 
-struct memHeader
+
+typedef struct mem_header
 {
     unsigned long size;
-    struct memHeader *prev;
-    struct memHeader *next;
+    struct mem_header *prev;
+    struct mem_header *next;
     char *sanityCheck;
     unsigned char datastart[0];
-};
+}memHeader;
 
-struct context_frame
+typedef struct context_frame
 {
     unsigned int edi;
     unsigned int esi;
@@ -86,9 +83,9 @@ struct context_frame
     unsigned int iret_cs;
     unsigned int eflags;
     unsigned int interrupt_code;
-};
+}contextFrame;
 
-struct pcb
+typedef struct pcb
 {
     int pid;
     int state;
@@ -98,32 +95,29 @@ struct pcb
     // context = (struct context_frame*) (proc_to_create->esp);
     unsigned long esp;
     void *proc_locn;
-    void *proc_stack;
     struct pcb *next;
-};
+}pcb;
 // mem.c prototypes
 extern void kmeminit(void);
 extern void *kmalloc(size_t size);
 extern int kfree(void *);
-extern void defragMemory(struct memHeader *);
+extern void defragMemory(memHeader *);
 
 // disp.c prototypes
-struct pcb list_of_pcbs[MAX_PCB_SIZE];
-struct pcb *ready_queue;
+pcb list_of_pcbs[MAX_PCB_SIZE];
+pcb *ready_queue;
 
 extern void initDispatch(void);
 extern void dispatch(void);
-extern void ready(struct pcb *);
-extern struct pcb *next(void);
-extern void cleanup(struct pcb *);
-extern void readyEnqueue(struct pcb *);
-extern struct pcb *readyDequeue(void);
+extern void ready(pcb *);
+extern pcb *next(void);
+extern void cleanup(pcb *);
 
 // create.c prototypes
 extern int create(void (*func)(void), int stack);
 
 // ctws.c prototypes
-extern int contextSwitch(struct pcb *proc);
+extern int contextSwitch(pcb *proc);
 void initContextSwitch(void);
 
 // syscall.c prototype
@@ -132,7 +126,8 @@ extern unsigned int syscreate(void (*func)(void), int stack);
 extern void sysyield(void);
 extern void sysstop(void);
 
-extern void printASMRegisters(void);
+// user.c prototype
+extern void root(void);
 
 /* Anything you add must be between the #define and this comment */
 #endif

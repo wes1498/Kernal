@@ -14,7 +14,7 @@ void _ISREntryPoint(void);
 static void __attribute__((used)) * k_stack;
 static unsigned long ESP;
 
-void printRegisters(struct pcb *);
+void printRegisters(pcb *);
 
 // Setup the IDT to map interrupt INTERRUPT to _ISREntryPoint
 void initContextSwitch(void)
@@ -22,16 +22,16 @@ void initContextSwitch(void)
    set_evec(INTERRUPT_CODE, (unsigned long)_ISREntryPoint);
 }
 
-extern int contextSwitch(struct pcb *proc)
+extern int contextSwitch(pcb *proc)
 {
    // set global process stack pointer
+   
+   
    ESP = proc->esp;
    printRegisters(proc);
 
-   // set stack pointer to point to process context
-   struct context_frame *context = (struct context_frame *)ESP;
-   kprintf("we got here successfully1");
-   // save kernal context and kernal stack pointer
+   contextFrame *context = (contextFrame*)ESP;
+   kprintf("Got to context switcher successfully\n");
    __asm __volatile(" \
          pushf \n\
          pusha \n\
@@ -50,16 +50,15 @@ extern int contextSwitch(struct pcb *proc)
                     :
                     :
                     : "%eax");
-   kprintf("testtttt\n");
    proc->esp = ESP;
-   context = (struct context_frame *)ESP;
+   context = (contextFrame*)ESP;
    
    return context->interrupt_code;
 }
 
-void printRegisters(struct pcb *proc)
+void printRegisters(pcb *proc)
 {
-   struct context_frame *context = (struct context_frame *)proc->esp;
+   contextFrame *context = (contextFrame *)proc->esp;
 
    kprintf("eax 0x%x\n", context->eax);
    kprintf("ecx 0x%x\n", context->ecx);
