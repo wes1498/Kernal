@@ -20,13 +20,14 @@ void root(void)
 	kprintf("Got to user code successfully\n");
 
 	syscreate(dummyproc, STACKSIZE);
-	
-	// (very!) basic kmalloc/kfree
-	void* ptr = kmalloc(32);
-	kfree(ptr);
 
-	for(;;)
-	{
-		sysyield();
-	}
+	// (very!) basic kmalloc/kfree
+	void *ptr = kmalloc(32);
+	kfree(ptr);
+	sysstop();
+
+	// for(;;)
+	// {
+	// 	sysyield();
+	// }
 }

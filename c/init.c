@@ -44,6 +44,8 @@ void initproc(void) /* The beginning */
   initDispatch();
   initContextSwitch();
 
+  int pid = create(root, 4096);
+
   dispatch();
 
   /* Add all of your code before this comment and after the previous comment */

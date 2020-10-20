@@ -45,7 +45,7 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define INTERRUPT_CODE 69
 
 /* Test Toggle */
-#define RUNTESTS 1
+#define RUNTESTS 0
 
 /* Functions defined by startup code */
 void bzero(void *base, int cnt);
@@ -82,7 +82,7 @@ typedef struct context_frame
     unsigned int iret_eip;
     unsigned int iret_cs;
     unsigned int eflags;
-    unsigned int interrupt_code;
+    unsigned int syscall_code;
 }contextFrame;
 
 typedef struct pcb

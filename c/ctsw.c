@@ -13,6 +13,7 @@
 void _ISREntryPoint(void);
 static void __attribute__((used)) * k_stack;
 static unsigned long ESP;
+unsigned int call;
 
 void printRegisters(pcb *);
 
@@ -25,12 +26,11 @@ void initContextSwitch(void)
 extern int contextSwitch(pcb *proc)
 {
    // set global process stack pointer
-   
-   
-   ESP = proc->esp;
-   printRegisters(proc);
 
-   contextFrame *context = (contextFrame*)ESP;
+   ESP = proc->esp;
+   //printRegisters(proc);
+
+   contextFrame *context = (contextFrame *)ESP;
    kprintf("Got to context switcher successfully\n");
    __asm __volatile(" \
          pushf \n\
@@ -51,9 +51,8 @@ extern int contextSwitch(pcb *proc)
                     :
                     : "%eax");
    proc->esp = ESP;
-   context = (contextFrame*)ESP;
-   
-   return context->interrupt_code;
+   context = (contextFrame *)ESP;
+   return context->eax;
 }
 
 void printRegisters(pcb *proc)

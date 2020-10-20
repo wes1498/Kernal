@@ -14,20 +14,16 @@ extern int syscall(int call, ...)
 {
     va_list valist;
     va_start(valist, call);
-    int parameters[2];
     int output;
 
-    parameters[0] = va_arg(valist, int);
-    parameters[1] = va_arg(valist, int);
-
     __asm __volatile(" \
-        movl %1, %%eax \n\
-        push %2 \n\
+        movl %1, %%eax\n\
+        movl %2, %%edx\n\
         int %3 \n\
         movl %%eax, %0 \n\
             "
                 : "=m"(output)
-                : "m"(call), "m"(parameters), "i"(INTERRUPT_CODE)
+                : "m"(call), "m"(valist), "i"(INTERRUPT_CODE)
                 : "%eax");
 
     return output;

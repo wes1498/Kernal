@@ -2,6 +2,7 @@
  */
 
 #include <xeroskernel.h>
+#include <stdarg.h>
 
 void initQueue(void);
 void initPCBs(void);
@@ -16,15 +17,20 @@ extern void initDispatch()
 
 extern void dispatch()
 {
-
+    va_list parameters;
+    void (*fp)(void);
     for (pcb *process = next(); process;)
     {
+
         process->state = RUNNING;
         int request = contextSwitch(process);
+        contextFrame *ctx = (contextFrame *)process->esp;
+        parameters = (va_list)ctx->edx;
         switch (request)
         {
         case CREATE:
-            //int create_process = create(sizeof(function args))
+            fp = va_arg(parameters, int);
+            int create_process = create(fp, va_arg(ap, int));
             ready(process);
             break;
         case YIELD:
