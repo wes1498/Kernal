@@ -43,8 +43,8 @@ void initproc(void) /* The beginning */
 
   initDispatch();
   initContextSwitch();
-
   int pid = create(root, 4096);
+  // kprintf("value of pid after create in init.c : %d\n", pid);
 
   dispatch();
 

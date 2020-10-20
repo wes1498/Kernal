@@ -19,26 +19,36 @@ extern void dispatch()
 {
     va_list parameters;
     void (*fp)(void);
+    contextFrame *ctx;
+    int stack;
     for (pcb *process = next(); process;)
     {
 
+        // kprintf("whats in the ready_queue? %d\n", ready_queue->pid);
+        // if (ready_queue->pid == 2)
+        // {
+        //     break;
+        // }
+
         process->state = RUNNING;
         int request = contextSwitch(process);
-        contextFrame *ctx = (contextFrame *)process->esp;
-        parameters = (va_list)ctx->edx;
+        // kprintf("request value: %d\n", request);
         switch (request)
         {
         case CREATE:
-            fp = va_arg(parameters, int);
-            int create_process = create(fp, va_arg(ap, int));
-            ready(process);
+            ctx = (contextFrame *)process->esp;
+            parameters = (va_list)ctx->edx;
+            fp = (void *)va_arg(parameters, int);
+            stack = va_arg(parameters, int);
+            int pid = create(fp, stack);
+
             break;
         case YIELD:
             ready(process);
             process = next();
             break;
         case STOP:
-            //cleanup(process);
+            cleanup(process);
             process = next();
             break;
         }
@@ -93,12 +103,14 @@ void readyEnqueue(pcb *proc)
     // if ready queue is NOT empty
     if (ready_queue)
     {
+        pcb *q_ptr = ready_queue;
+
         // go to the last element;
-        while (ready_queue->next)
+        while (q_ptr->next)
         {
-            ready_queue = ready_queue->next;
+            q_ptr = q_ptr->next;
         }
-        ready_queue->next = proc;
+        q_ptr->next = proc;
         proc->next = 0;
     }
     else
@@ -107,6 +119,7 @@ void readyEnqueue(pcb *proc)
         ready_queue = proc;
         ready_queue->next = NULL;
     }
+    proc->state = READY;
 }
 
 pcb *readyDequeue()

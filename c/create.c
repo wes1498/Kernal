@@ -33,14 +33,14 @@ extern int create(void (*func)(void), int stack)
     int buffer = 64;
 
     // this is the pointer at the end of the memory location with a buffer.
-    unsigned char *stack_pointer = (proc_pointer + proc_header->size - buffer);
+    unsigned char *stack_pointer = (unsigned char *)(proc_pointer + proc_header->size - buffer);
 
     // set new process to READY state
     proc_to_create->state = READY;
     stack_pointer -= sizeof(contextFrame);
-    proc_to_create->esp = (unsigned int) stack_pointer;
+    proc_to_create->esp = (unsigned int)stack_pointer;
     // this sets the proc_to_create->esp context
-    context = (contextFrame*)(proc_to_create->esp);
+    context = (contextFrame *)(proc_to_create->esp);
     // ::define the process context::
     context->edi = 0;
     context->esi = 0;
@@ -61,8 +61,8 @@ extern int create(void (*func)(void), int stack)
 
     // kprintf("pcbs %d\n pid = %d, state = %d, esp = %ld, proc_stack = %ld\n\n",
     //         i,
-    //         list_of_pcbs[i].pid,
-    //         list_of_pcbs[i].state,
-    //         list_of_pcbs[i].esp,
-    //         list_of_pcbs[i].proc_stack);
+    //         list_of_pcbs[0].pid,
+    //         list_of_pcbs[0].state,
+    //         list_of_pcbs[0].esp,
+    //         list_of_pcbs[0].proc_locn);
 }

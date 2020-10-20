@@ -92,11 +92,11 @@ void defragMemory(memHeader *node_to_free)
     // (previous_node) -> (node_to_free) -> ...
     if (node_to_free->prev)
     {
-        unsigned long size_of_prev = (unsigned long) node_to_free->prev + node_to_free->prev->size;
-        
+        unsigned long size_of_prev = (unsigned long)node_to_free->prev + node_to_free->prev->size;
+
         if (size_of_prev == (unsigned long)node_to_free)
         {
-            kprintf("here 1");
+            // kprintf("here 1");
             node_to_free->prev->size += node_to_free->size;
             node_to_free->prev->next = node_to_free->next;
             if (node_to_free->next)
@@ -109,8 +109,8 @@ void defragMemory(memHeader *node_to_free)
     if (node_to_free->next)
     {
         unsigned long size_of_next = (unsigned long)node_to_free + node_to_free->size;
-        kprintf("size of next: %ld\n",size_of_next);
-        kprintf("size of nodetofree: %ld\n",node_to_free);
+        // kprintf("size of next: %ld\n",size_of_next);
+        // kprintf("size of nodetofree: %ld\n",node_to_free);
         if (size_of_next == (int)node_to_free->next)
         {
             node_to_free->size += node_to_free->next->size;
@@ -130,7 +130,7 @@ extern int kfree(void *ptr)
     // ptr = dataStart[0]
     //
     memHeader *node_to_free = (memHeader *)(ptr - sizeof(memHeader));
-    kprintf("value of node_to_free: %ld\n", node_to_free);
+    // kprintf("value of node_to_free: %ld\n", node_to_free);
     memHeader *head_cpy = head;
     memHeader *next_free;
 

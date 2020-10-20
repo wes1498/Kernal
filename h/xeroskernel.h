@@ -26,7 +26,6 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define BLOCKERR -5 /* non-blocking op would block  */
 #define LASTCONST -5
 
-
 /* global vars definitions */
 #define MAX_PCB_SIZE 32
 #define MAX_PROC_SIZE 16
@@ -59,7 +58,6 @@ void lidt(void);
 void outb(unsigned int, unsigned char);
 void set_evec(unsigned int xnum, unsigned long handler);
 
-
 typedef struct mem_header
 {
     unsigned long size;
@@ -67,7 +65,7 @@ typedef struct mem_header
     struct mem_header *next;
     char *sanityCheck;
     unsigned char datastart[0];
-}memHeader;
+} memHeader;
 
 typedef struct context_frame
 {
@@ -82,8 +80,8 @@ typedef struct context_frame
     unsigned int iret_eip;
     unsigned int iret_cs;
     unsigned int eflags;
-    unsigned int syscall_code;
-}contextFrame;
+    unsigned int interrupt_code;
+} contextFrame;
 
 typedef struct pcb
 {
@@ -96,7 +94,7 @@ typedef struct pcb
     unsigned long esp;
     void *proc_locn;
     struct pcb *next;
-}pcb;
+} pcb;
 // mem.c prototypes
 extern void kmeminit(void);
 extern void *kmalloc(size_t size);
