@@ -25,7 +25,8 @@ typedef unsigned int size_t; /* Something that can hold the value of
                     /*  (usu. defined as ^B)        */
 #define BLOCKERR -5 /* non-blocking op would block  */
 #define LASTCONST -5
-
+#define xstr(s) str(s)
+#define str(s) #s
 
 /* global vars definitions */
 #define MAX_PCB_SIZE 32
@@ -46,6 +47,11 @@ typedef unsigned int size_t; /* Something that can hold the value of
 
 /* Test Toggle */
 #define RUNTESTS 1
+#define assert(C); \
+  if (!(C)) {\
+    kprintf("Line Failure at: %u, (%s)\n", __LINE__, xstr(C));\
+    for(;;);\
+  }
 
 /* Functions defined by startup code */
 void bzero(void *base, int cnt);

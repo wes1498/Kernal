@@ -22,9 +22,9 @@ static void testMemoryManagement(void);
 void runTests()
 {
   kmeminit();
+  initDispatch();
   testMemoryManagement();
-  // initDispatch();
-  // //testDispatch();
+  testDispatch();
   // initContextSwitch();
   // testContextSwitch();
 }
@@ -70,48 +70,113 @@ extern long freemem;
 pcb list_of_pcbs[MAX_PCB_SIZE];
 pcb *ready_queue;
 
+void *testKmallocUtil(size_t size)
+{
+
+  void *m1 = kmalloc(size);
+  assert(m1 != NULL);
+  int actual_size = ((size) / 16 + ((size % 16) ? 1 : 0)) * 16 + sizeof(memHeader);
+  memHeader *m1_h = (unsigned long)m1 - sizeof(memHeader);
+  assert(m1_h->size == actual_size);
+  return m1;
+}
+
+void testKmalloc() {
+  // 1. Test for simple case of kmalloc
+  int size = 300;
+  void *m1 = testKmallocUtil(size);
+  assert((m1 == freemem + sizeof(memHeader)));
+  assert(kfree(m1) == 1);
+
+  // 2. Test kmalloc size that can only fit in second memory block
+  size = 2097152;
+  m1 = testKmallocUtil(size);
+  assert((m1 == HOLEEND + sizeof(memHeader)));
+  assert(kfree(m1) == 1);
+
+  // 3. Allocate kmalloc size up to HOLESTART
+  size = 615420;
+  m1 = testKmallocUtil(size);
+  assert(m1 == freemem + sizeof(memHeader));
+
+  // 4. Allocate something after HOLEEND
+  size = 300;
+  void *m2 = testKmallocUtil(size);
+  assert(m2 == HOLEEND + sizeof(memHeader));
+  assert(kfree(m1) == 1);
+  assert(kfree(m2) == 1);
+
+  // 5. Allocate multiple memoryblocks
+  void *md[1000];
+  int bound;
+  for (int i = 0; i < 10000; i++)
+  {
+    md[i] = kmalloc(80000);
+    if (md[i] == NULL)
+    {
+      bound = i;
+      break;
+    }
+  }
+  for (int i = 0; i < bound; i++)
+  {
+    assert(kfree(md[i]) == 1);
+  }
+
+  // 6. Allocate more memory than possible
+  size = 0x40000000;
+  assert(kmalloc(size) == NULL);
+}
+
+int getFreeListSize()
+{
+  memHeader *node = head;
+  int count = 0;
+  while (node)
+  {
+    count++;
+    node = node->next;
+  }
+  return count;
+}
+
+void testKfree() {
+  // 1. initial free list is 2 (Before and After HOLE)
+  assert(getFreeListSize() == 2);
+
+  // 2. fill the memory before HOLE
+  void* m1 = NULL;
+
+  // 4. kfree on NULL or unallocated memory
+  assert(kfree(m1) == 0);
+  assert(kfree((void*)0x100) == 0);
+
+  m1 = kmalloc(300);
+  void* m2 = kmalloc(300);
+  void* m3 = kmalloc(300);
+
+  // 5. free with no coalesce
+  kfree(m1);
+  assert(getFreeListSize() == 3);
+
+  // 6. assert should consider coalesce 
+  kfree(m2);
+  assert(getFreeListSize() == 3);
+  kfree(m3);
+  assert(getFreeListSize() == 2);
+}
 void testMemoryManagement()
 {
-  // void *m1 = kmalloc(300);
-  // if (m1 == freemem + sizeof(memHeader))
-  // {
-  //   kprintf("kmalloc returns start of memory!");
-  // }
-  // memHeader *m1_h = (unsigned long)m1 - sizeof(memHeader);
-  // if (m1_h->size == 320)
-  // {
-  //   kprintf("header size is the same as size of kmalloc");
-  // }
-  // kfree(m1);
-
-  printList();
-  void *m2 = kmalloc(2097152);
-  //kfree(m2);
-  printList();
-
-  // void *m2 = kmalloc(100);
-  // void *m3 = kmalloc(100);
-  // void *m4 = kmalloc(100);
-  // void *m5 = kmalloc(100);
-  // void *m6 = NULL;
-  // // Blocks [m5, HOLESTART], [HOLEEND, MAXADDR]
-  // printList();
-  // kfree(m1);
-  // // Blocks [BEG, m2], [m5, HOLESTART], [HOLEEND, MAXADDR]
-
-  // printList();
-  // kfree(m2);
-  // kfree(m3);
-  // // Coalesce [BEG, m2] [m2, m3], [m3, m4] -> [BEG, m4]
-  // // Blocks [BEG, m4], [m5, HOLESTART], [HOLEEND, MAXADDR
-  // printList();
-  // kfree(m5);
-  // // Blocks [BEG, m4], [m4, m5], [m5, HOLESTART], [HOLEEND, MAXADDR]
-  // kfree(m4);
+  testKmalloc();
+  kprintf("Kmalloc() function works successfully!\n");
+  testKfree();
+  kprintf("Kfree() function works successfully!\n");
 }
 void testDispatch()
 {
   testQueue();
+  kprintf("Ready Queue works successfully!\n");
+
 }
 
 void populateRegisters(void)
@@ -149,49 +214,48 @@ void testContextSwitch()
   cleanup(test_process);
 }
 
+int getReadyQueueSize() {
+  pcb *iter = ready_queue;
+  int count = 0;
+
+  while (iter)
+  {
+    count++;
+    iter = iter->next;
+  }
+  return count;
+}
+
 void testQueue()
 {
-  // we'd have to figure out how to allocate these pcbs in our real implementation.
-  // probably just have a while loop and check for list_of_pcbs[i]->state == STOPPED
+  // 1. Ready queue is initially empty
+  assert(getReadyQueueSize() == 0);
   pcb test1 = list_of_pcbs[0];
+  pcb* test1_cpy = &test1;
   test1.state = READY;
   pcb test2 = list_of_pcbs[1];
   test2.state = READY;
   pcb test3 = list_of_pcbs[2];
   test3.state = READY;
 
+  // 2. ready queue has one pcb
   readyEnqueue(&test1);
+  assert(getReadyQueueSize() == 1);
   readyEnqueue(&test2);
-  // 2 processes in queue (1, 2)
-  printRreadyQueue();
-  readyDequeue();
-  // 1 process in queue (2)
-  printRreadyQueue();
+  assert(getReadyQueueSize() == 2);
 
-  readyEnqueue(&test3);
-  // 2 processes in queue (2, 3)
-  printRreadyQueue();
-  readyDequeue();
-  readyDequeue();
-  // 0 processes in queue
-  printRreadyQueue();
+  // 3. ready queue removed first pcb
+  assert(readyDequeue() == (int)test1_cpy);
+  assert(getReadyQueueSize() == 1);
+  assert(readyDequeue() == (int)&test2);
+
+  // 4. ready queue cannot remove something thats already empty
+  assert(readyDequeue() == 0);
 }
 
 void printHeader(memHeader *node)
 {
   kprintf("Addr: %ld, Size: %ld, Prev: %ld, Next: %ld, SanityCheck: %ld\n", node, node->size, node->prev, node->next, node->sanityCheck);
-}
-
-int getFreeListSize()
-{
-  memHeader *node = head;
-  int count = 0;
-  while (node)
-  {
-    count++;
-    node = node->next;
-  }
-  return count;
 }
 
 void printList()
