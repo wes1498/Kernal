@@ -12,21 +12,21 @@ extern char *maxaddr;   /* max memory address (set in i386.c)	*/
 #if RUNTESTS
 static void runTests(void);
 static void testMemoryManagement(void);
-static void testDispatch(void);
-static void testContextSwitch(void);
-static void testQueue(void);
-static void printRreadyQueue(void);
-static void printList(void);
-static int getFreeListSize(void);
+// static void testDispatch(void);
+// static void testContextSwitch(void);
+// static void testQueue(void);
+// static void printRreadyQueue(void);
+// static void printList(void);
+// static int getFreeListSize(void);
 
 void runTests()
 {
   kmeminit();
-  //testMemoryManagement();
-  initDispatch();
-  //testDispatch();
-  initContextSwitch();
-  testContextSwitch();
+  testMemoryManagement();
+  // initDispatch();
+  // //testDispatch();
+  // initContextSwitch();
+  // testContextSwitch();
 }
 #endif
 
@@ -39,14 +39,14 @@ void initproc(void) /* The beginning */
   runTests();
 #endif
 
-  kmeminit();
+  // kmeminit();
 
-  initDispatch();
-  initContextSwitch();
-  int pid = create(root, 4096);
-  // kprintf("value of pid after create in init.c : %d\n", pid);
+  // initDispatch();
+  // initContextSwitch();
 
-  dispatch();
+  // int pid = create(root, 4096);
+
+  // dispatch();
 
   /* Add all of your code before this comment and after the previous comment */
   /* This code should never be reached after you are done */
@@ -72,27 +72,42 @@ pcb *ready_queue;
 
 void testMemoryManagement()
 {
+  // void *m1 = kmalloc(300);
+  // if (m1 == freemem + sizeof(memHeader))
+  // {
+  //   kprintf("kmalloc returns start of memory!");
+  // }
+  // memHeader *m1_h = (unsigned long)m1 - sizeof(memHeader);
+  // if (m1_h->size == 320)
+  // {
+  //   kprintf("header size is the same as size of kmalloc");
+  // }
+  // kfree(m1);
 
-  void *m1 = kmalloc(100);
-  void *m2 = kmalloc(100);
-  void *m3 = kmalloc(100);
-  void *m4 = kmalloc(100);
-  void *m5 = kmalloc(100);
-  void *m6 = NULL;
-  // Blocks [m5, HOLESTART], [HOLEEND, MAXADDR]
   printList();
-  kfree(m1);
-  // Blocks [BEG, m2], [m5, HOLESTART], [HOLEEND, MAXADDR]
+  void *m2 = kmalloc(2097152);
+  //kfree(m2);
+  printList();
 
-  printList();
-  kfree(m2);
-  kfree(m3);
-  // Coalesce [BEG, m2] [m2, m3], [m3, m4] -> [BEG, m4]
-  // Blocks [BEG, m4], [m5, HOLESTART], [HOLEEND, MAXADDR
-  printList();
-  kfree(m5);
-  // Blocks [BEG, m4], [m4, m5], [m5, HOLESTART], [HOLEEND, MAXADDR]
-  kfree(m4);
+  // void *m2 = kmalloc(100);
+  // void *m3 = kmalloc(100);
+  // void *m4 = kmalloc(100);
+  // void *m5 = kmalloc(100);
+  // void *m6 = NULL;
+  // // Blocks [m5, HOLESTART], [HOLEEND, MAXADDR]
+  // printList();
+  // kfree(m1);
+  // // Blocks [BEG, m2], [m5, HOLESTART], [HOLEEND, MAXADDR]
+
+  // printList();
+  // kfree(m2);
+  // kfree(m3);
+  // // Coalesce [BEG, m2] [m2, m3], [m3, m4] -> [BEG, m4]
+  // // Blocks [BEG, m4], [m5, HOLESTART], [HOLEEND, MAXADDR
+  // printList();
+  // kfree(m5);
+  // // Blocks [BEG, m4], [m4, m5], [m5, HOLESTART], [HOLEEND, MAXADDR]
+  // kfree(m4);
 }
 void testDispatch()
 {

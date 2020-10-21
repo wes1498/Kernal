@@ -7,7 +7,7 @@
 
 typedef char Bool;           /* Boolean type                  */
 typedef unsigned int size_t; /* Something that can hold the value of
-                              * theoretical maximum number of bytes 
+                              * theoretical maximum number of bytes
                               * addressable in this architecture.
                               */
 #define FALSE 0              /* Boolean constants             */
@@ -44,7 +44,7 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define INTERRUPT_CODE 69
 
 /* Test Toggle */
-#define RUNTESTS 0
+#define RUNTESTS 1
 
 /* Functions defined by startup code */
 void bzero(void *base, int cnt);
@@ -80,8 +80,7 @@ typedef struct context_frame
     unsigned int iret_eip;
     unsigned int iret_cs;
     unsigned int eflags;
-    unsigned int interrupt_code;
-} contextFrame;
+}contextFrame;
 
 typedef struct pcb
 {

@@ -19,7 +19,7 @@ void producer(void)
 {
 	for (int i = 0; i < 15; i++)
 	{
-		kprintf("Happy 2019 ");
+		kprintf("Happy 2019 \n");
 		sysyield();
 	}
 	sysstop();
@@ -38,23 +38,15 @@ void root(void)
 {
 	kprintf("Got to user code successfully\n");
 
-	// syscreate(dummyproc, STACKSIZE);
+	//syscreate(dummyproc, 4097);
 	syscreate(producer, STACKSIZE);
 	syscreate(consumer, STACKSIZE);
-	pcb *proc = ready_queue;
-	// while (proc)
-	// {
-	// 	kprintf("proc id: %d\n", proc->pid);
-	// 	proc = proc->next;
-	// }
 
 	// (very!) basic kmalloc/kfree
-	// void *ptr = kmalloc(32);
-	// kfree(ptr);
-
-	while (1)
+	void *ptr = kmalloc(32);
+	kfree(ptr);
+	for (;;)
 	{
-		// kprintf("in sysyield\n");
 		sysyield();
 	}
 }

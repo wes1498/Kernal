@@ -56,6 +56,7 @@ extern int create(void (*func)(void), int stack)
 
     proc_to_create->proc_locn = proc_pointer;
     // put proc in ready_queue
+    
     ready(proc_to_create);
     return proc_to_create->pid;
 

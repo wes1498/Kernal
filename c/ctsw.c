@@ -31,7 +31,6 @@ extern int contextSwitch(pcb *proc)
    //printRegisters(proc);
 
    contextFrame *context = (contextFrame *)ESP;
-   // kprintf("Got to context switcher successfully\n");
    __asm __volatile(" \
          pushf \n\
          pusha \n\

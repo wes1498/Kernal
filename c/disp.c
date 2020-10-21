@@ -46,6 +46,7 @@ extern void dispatch()
         case YIELD:
             ready(process);
             process = next();
+            //kprintf("process id is: %d\n", process->pid);
             break;
         case STOP:
             cleanup(process);
@@ -76,6 +77,8 @@ void initPCBs()
 
 pcb *next()
 {
+    // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
+    // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
     return readyDequeue();
 }
 extern void ready(pcb *proc)
@@ -86,16 +89,15 @@ extern void ready(pcb *proc)
 extern void cleanup(pcb *proc)
 {
     kfree(proc->proc_locn);
-    // proc->pid = NULL;
     proc->proc_locn = 0;
     proc->next = 0;
     proc->state = STOPPED;
 }
 
-/* 
+/*
 =====================================
     QUEUE IMPLEMENTATION BELOW
-===================================== 
+=====================================
 */
 
 void readyEnqueue(pcb *proc)

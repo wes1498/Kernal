@@ -26,15 +26,15 @@ file.
 
 
 STUDENT  1
-Name :
-St. No:
-Unix Id :
-Email:
+Name : Wesley Sequeira
+St. No: 17570169
+Unix Id : e6y0b
+Email: wesley.sequeira@hotmail.com
 
 
 STUDENT  2
-Name :
-St. No:
-Unix Id :
-Email:
+Name : Miguel Moya
+St. No: 35798347
+Unix Id : l7m1b
+Email: miguelmoya97@hotmail.com
 
