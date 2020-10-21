@@ -23,10 +23,10 @@ void runTests()
 {
   kmeminit();
   initDispatch();
+  initContextSwitch();
   testMemoryManagement();
   testDispatch();
-  // initContextSwitch();
-  // testContextSwitch();
+  testContextSwitch();
 }
 #endif
 
@@ -60,9 +60,9 @@ void initproc(void) /* The beginning */
 
 #if RUNTESTS
 
-#define EAX 0xaaaa
-#define ECX 0xbbbb
-#define EDX 0xcccc
+#define ECX 0xaaaa
+#define EDX 0xbbbb
+#define EBX 0xcccc
 
 extern memHeader *head;
 extern long freemem;
@@ -107,6 +107,7 @@ void testKmalloc() {
   assert(kfree(m2) == 1);
 
   // 5. Allocate multiple memoryblocks
+  printList();
   void *md[1000];
   int bound;
   for (int i = 0; i < 10000; i++)
@@ -114,6 +115,7 @@ void testKmalloc() {
     md[i] = kmalloc(80000);
     if (md[i] == NULL)
     {
+      kprintf("i: %d\n", i);
       bound = i;
       break;
     }
@@ -122,6 +124,7 @@ void testKmalloc() {
   {
     assert(kfree(md[i]) == 1);
   }
+  printList();
 
   // 6. Allocate more memory than possible
   size = 0x40000000;
@@ -181,37 +184,39 @@ void testDispatch()
 
 void populateRegisters(void)
 {
-  kprintf("we got here successfully2\n");
   // populates the process registers with dummy values for testing
   int ret;
   __asm __volatile(" \
-      movl $0xaaaa, %%eax \n\
-      movl $0xbbbb, %%ecx \n\
-      movl $0xcccc, %%edx \n\
+      movl $0xaaaa, %%ecx \n\
+      movl $0xbbbb, %%edx \n\
+      movl $0xcccc, %%ebx \n\
       int %1\n\
       movl %%eax, %0 \n\
         "
                    : "=m"(ret)
                    : "i"(INTERRUPT_CODE)
                    : "%eax");
-
-  // systop returns from process to kernal
   sysstop();
 }
 
 void testContextSwitch()
 {
-  create(root, 0x100);
+  // 1. Assert no process in ready queue
+  assert(next() == NULL);
 
+  // 2. Create a process that populates some test values into registers eax, ecx, edx
   int pid = create(populateRegisters, 0x1000);
-  //kprintf("eip here is 0x%x\n", populateRegisters);
   pcb *test_process = next();
+  assert(pid == test_process->pid);
+
   int request = contextSwitch(test_process);
   contextFrame *context = (contextFrame *)test_process->esp;
-  kprintf("register eax 0x%x and 0x%x\n", context->eax, EAX);
-  kprintf("register ecx 0x%x and 0x%x\n", context->ecx, ECX);
-  kprintf("register edx 0x%x and 0x%x\n", context->edx, EDX);
+  assert(context->ecx == ECX);
+  assert(context->edx == EDX);
+  assert(context->ebx == EBX);
+
   cleanup(test_process);
+  kprintf("contextSwitch() works successfully!");
 }
 
 int getReadyQueueSize() {
