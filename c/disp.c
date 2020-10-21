@@ -137,8 +137,6 @@ pcb *readyDequeue()
     }
     else
     {
-        // idk if we need to do some work here.
-        kprintf("Queue is empty\n");
-        return 0;
+        return NULL;
     }
 }

@@ -43,14 +43,13 @@ extern void *kmalloc(size_t size)
     memHeader *node_to_alloc = head;
 
     // loop until we find a mem spot thats big enough to hold size
-    while (node_to_alloc && node_to_alloc->size < amnt)
+    while (node_to_alloc && node_to_alloc->size <= amnt)
     {
         node_to_alloc = node_to_alloc->next;
     }
     // Case: where no available space is found in the data structure.
     if (node_to_alloc == NULL)
     {
-        kprintf("No available space for this size: %d\n", size);
         return NULL;
     }
     // Case: where an available space is found
@@ -96,7 +95,6 @@ void defragMemory(memHeader *node_to_free)
 
         if (size_of_prev == (unsigned long)node_to_free)
         {
-            // kprintf("here 1");
             node_to_free->prev->size += node_to_free->size;
             node_to_free->prev->next = node_to_free->next;
             if (node_to_free->next)
@@ -109,13 +107,13 @@ void defragMemory(memHeader *node_to_free)
     if (node_to_free->next)
     {
         unsigned long size_of_next = (unsigned long)node_to_free + node_to_free->size;
-        if (size_of_next == (int)node_to_free->next)
+        if (size_of_next == (unsigned long)node_to_free->next)
         {
             node_to_free->size += node_to_free->next->size;
             node_to_free->next = node_to_free->next->next;
-            if (node_to_free->next->next)
+            if (node_to_free->next)
             {
-                node_to_free->next->next->prev = node_to_free;
+                node_to_free->next->prev = node_to_free;
             }
             //node_to_free->next = node_to_free;
         }
@@ -127,6 +125,7 @@ extern int kfree(void *ptr)
     // Grab the start of the allocated memory area
     // ptr = dataStart[0]
     //
+    if(ptr == NULL){return 0;}
     memHeader *node_to_free = (memHeader *)(ptr - sizeof(memHeader));
     // kprintf("value of node_to_free: %ld\n", node_to_free);
     memHeader *head_cpy = head;
@@ -158,10 +157,6 @@ extern int kfree(void *ptr)
         {
             head_cpy = head_cpy->next;
         }
-        // head_cpy < node-to-free
-        // head_cpy->next > node_to_free
-        //head_cpy ->  node_to_free (0x100) -> nextfree (head_cpy->next)(0x200) -> ...
-
         if (head_cpy->next)
         {
             // get reference of head_cpy->next
@@ -182,9 +177,22 @@ extern int kfree(void *ptr)
     }
     else
     {
-        kprintf("address never allocated\n");
         return 0;
     }
 
     return 1;
+}
+
+void printListt()
+{
+  int i = 0;
+  memHeader *node = head;
+  kprintf("--==--printing free mem list--==--\n");
+  while (node)
+  {
+    printHeader(node);
+    i++;
+    node = node->next;
+  }
+  kprintf("==List size: %d==\n", i);
 }
