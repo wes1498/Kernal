@@ -57,8 +57,8 @@ extern void *kmalloc(size_t size)
 
     node_to_alloc->sanityCheck = (char *)node_to_alloc;
     // divide by 16 so it gets 16-byte aligned
-    new_node = node_to_alloc + (amnt / 16);
-    new_node->size = (node_to_alloc->size - amnt) - sizeof(memHeader);
+    new_node = (unsigned long)node_to_alloc + amnt;
+    new_node->size = node_to_alloc->size - amnt;
     new_node->sanityCheck = 0;
 
     node_to_alloc->size = amnt;
@@ -92,8 +92,8 @@ void defragMemory(memHeader *node_to_free)
     // (previous_node) -> (node_to_free) -> ...
     if (node_to_free->prev)
     {
-        unsigned long size_of_prev = (unsigned long) node_to_free->prev + node_to_free->prev->size;
-        
+        unsigned long size_of_prev = (unsigned long)node_to_free->prev + node_to_free->prev->size;
+
         if (size_of_prev == (unsigned long)node_to_free)
         {
             kprintf("here 1");
@@ -109,8 +109,6 @@ void defragMemory(memHeader *node_to_free)
     if (node_to_free->next)
     {
         unsigned long size_of_next = (unsigned long)node_to_free + node_to_free->size;
-        kprintf("size of next: %ld\n",size_of_next);
-        kprintf("size of nodetofree: %ld\n",node_to_free);
         if (size_of_next == (int)node_to_free->next)
         {
             node_to_free->size += node_to_free->next->size;
@@ -130,7 +128,7 @@ extern int kfree(void *ptr)
     // ptr = dataStart[0]
     //
     memHeader *node_to_free = (memHeader *)(ptr - sizeof(memHeader));
-    kprintf("value of node_to_free: %ld\n", node_to_free);
+    // kprintf("value of node_to_free: %ld\n", node_to_free);
     memHeader *head_cpy = head;
     memHeader *next_free;
 
@@ -160,6 +158,7 @@ extern int kfree(void *ptr)
         {
             head_cpy = head_cpy->next;
         }
+        // head_cpy < node-to-free
         // head_cpy->next > node_to_free
         //head_cpy ->  node_to_free (0x100) -> nextfree (head_cpy->next)(0x200) -> ...
 

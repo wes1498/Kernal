@@ -19,7 +19,8 @@ extern void dispatch()
 {
     va_list parameters;
     void (*fp)(void);
-    for (pcb *process = next(); process;)
+    pcb *process = next();
+    for (;;)
     {
 
         process->state = RUNNING;
@@ -30,15 +31,15 @@ extern void dispatch()
         {
         case CREATE:
             fp = va_arg(parameters, int);
-            int create_process = create(fp, va_arg(ap, int));
-            ready(process);
+            int create_process = create(fp, va_arg(parameters, int));
             break;
         case YIELD:
             ready(process);
             process = next();
+            //kprintf("process id is: %d\n", process->pid);
             break;
         case STOP:
-            //cleanup(process);
+            cleanup(process);
             process = next();
             break;
         }
@@ -66,6 +67,8 @@ void initPCBs()
 
 pcb *next()
 {
+    // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
+    // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
     return readyDequeue();
 }
 extern void ready(pcb *proc)
@@ -76,7 +79,6 @@ extern void ready(pcb *proc)
 extern void cleanup(pcb *proc)
 {
     kfree(proc->proc_locn);
-    // proc->pid = NULL;
     proc->proc_locn = 0;
     proc->next = 0;
     proc->state = STOPPED;
@@ -107,6 +109,7 @@ void readyEnqueue(pcb *proc)
         ready_queue = proc;
         ready_queue->next = NULL;
     }
+    proc->state = READY;
 }
 
 pcb *readyDequeue()

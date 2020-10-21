@@ -38,9 +38,9 @@ extern int create(void (*func)(void), int stack)
     // set new process to READY state
     proc_to_create->state = READY;
     stack_pointer -= sizeof(contextFrame);
-    proc_to_create->esp = (unsigned int) stack_pointer;
+    proc_to_create->esp = (unsigned int)stack_pointer;
     // this sets the proc_to_create->esp context
-    context = (contextFrame*)(proc_to_create->esp);
+    context = (contextFrame *)(proc_to_create->esp);
     // ::define the process context::
     context->edi = 0;
     context->esi = 0;
@@ -56,6 +56,7 @@ extern int create(void (*func)(void), int stack)
 
     proc_to_create->proc_locn = proc_pointer;
     // put proc in ready_queue
+    
     ready(proc_to_create);
     return proc_to_create->pid;
 
