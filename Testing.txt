@@ -34,6 +34,9 @@ are to be limited to 80 characters.
         Root/Idle process spawning Producer and Cosumer.
     ------------------------------------------------------------------
 
+    Testing Methodologies and Conclusion
+    ------------------------------------------------------------------
+
 /********************************************************/
 
 
@@ -80,6 +83,7 @@ Addr: 595908, Size: 59452, Prev: 0, Next: 4143472, SanityCheck: 0
 Addr: 4143472, Size: 50815, Prev: 595908, Next: 0, SanityCheck 0:
 ==List size: 2==
 ```````````````````````````````````````````````````````````````````````````
+
 From inspection, this test passes as the remaining sizes of the free list
 is less than 80,000. On top of that, the references of the free list remained
 consistent with the kmalloc calls. (i.e. The next value of the head is addr value
@@ -148,6 +152,7 @@ pcb is full
 [...]
 pcb is full
 ```````````````````````````````````````````````````````````````````````````
+
 From the results above, our create() function printed 'pcb is full' and returned 0
 to denote a failure in each attempted process creation, which is expected since 
 32 process's have been created.
@@ -185,6 +190,46 @@ Happy 2019 everyone
 Happy 2019 everyone
 
 ```````````````````````````````````````````````````````````````````````````
+
 By inspection, the producer and consumer have successfully printed their values in the
 correct order. It has also demonstrated that the sysyield calls between the root, producer
 and consumer have successfully 
+
+
+Testing Methodologies and Conclusion:
+
+Also describe in two or three paragraphs, the overall testing
+methodologies that you used for the completed kernel and why you 
+are confident your kernel works.
+
+/********************************************************/**********************
+
+Our testing methodologies were simple but effective. In developing the memory 
+management portion, we focused primarily on printing the freelist memory each 
+time we kmalloc'd or kfree'd. This not only helped us create a mental picture 
+of what was going on in memory, but allowed us to implement our methods with 
+more rigor and confidence. For instance, throughout our implementation of 
+kmalloc  and kfree, we worked together in drawing diagrams of which memory 
+blocks were free and used. From that, we looked at the printed result, and 
+matched the general size of each by what we had depicted on paper. Although 
+this may seem unreliable, it definitely helped us gain better insight as to 
+what was going on within the memory. 
+
+Testing the functionality of the context and dispatcher alongside the general 
+process management was much more difficult because of how much of the code was 
+hidden from us. For example, we wanted to create many processes and execute them, 
+but it required us to call the dispatcher, a function that continues to run forever 
+(until a crash), but couldn't make any assertions afterward to test the 
+functionality. These were the complications in testing we had to create 
+work-arounds for. in this case, we solely relied on the user.c file by creating 
+the root process, running it, and seeing the printed results on the emulator. 
+These results verified that the dispatcher was able to switch between processes, 
+while accomodating the needs of the request from the context switcher.
+
+Our init.c file contains a section of a full testsuite for our implementations.
+We are confident that these tests are well written and captures the functionality
+of our implementation. We have also worked diligently through numerous virtual 
+peer programming calls to develop the best working kernal that we can. Finally, 
+based on our testing methodologies and approach to peer programming, we are 
+confident that our kernal works, and we are excited to continue to work on 
+developing the rest of the operating system!
