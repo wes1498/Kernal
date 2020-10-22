@@ -6,4 +6,185 @@ on a Windows machine display as expected due to the differences with
 respect to how new lines and carriage returns are treated. Line widths
 are to be limited to 80 characters.
 
+/********************************************************/
 
+                    Table   of  Contents
+
+    Memory Management Tests:
+    -----------------------------------------------------------------
+        -Test 1: Extensive kmalloc
+        
+        Calling kmalloc repeateadly until no more memory 
+        can be allocated
+    -----------------------------------------------------------------
+        -Test 2: Extensive kfree
+
+        Calling kfree on the allocated memory blocks.
+    ------------------------------------------------------------------
+
+    Process Management Tests:
+    ------------------------------------------------------------------
+        -Test 1: 
+
+        Spawning more than 32 processes, where 32 is the maximum
+        processes we can create. 
+    ------------------------------------------------------------------
+        -Test 2:
+
+        Root/Idle process spawning Producer and Cosumer.
+    ------------------------------------------------------------------
+
+/********************************************************/
+
+
+Memory Management Test 1:
+
+This test calls kmalloc with a fixed size repeatedly until there is
+no more usable free memory to use.
+We are looking for a free list of size 2 where the size of each 
+free memory block is less than 80,000 (see below). We will compare
+that to our control to check if the address spaces have increased
+for each kmalloc call.
+Our control is simply the free list before any memory allocation 
+occurred.
+
+
+How we tested this is we set up a loop that will iterate 10,000
+times with some arbitrarily chosen size. In our case we chose
+size 80,000. By inspection, it is not possible to allocate 10,000
+memory locations with size 80,000 in our kernel. In fact, only
+38 locations were allocated with this example (at the time of
+testing, as we know location of freemem changes for every line of 
+code added). 
+
+OUTPUTS:
+```````````````````````````````````````````````````````````````````````````
+Our CONTROL output of free list:
+
+--==--printing free mem list--==--
+Addr: 39892, Size: 615452, Prev: 0, Next: 1662976, SanityCheck: 0
+Addr: 1662976, Size: 2531311, Prev: 39892, Next: 0, SanityCheck 0:
+==List size: 2==
+
+Output of the loop on iteration 38 attempting to call kmalloc:
+
+No available space for this size: 80000
+
+(aside, we broke the loop when this happened, otherwise we would see
+the above message 9962 times)
+
+Output of free list after the 38 kmalloc calls:
+
+--==--printing free mem list--==--
+Addr: 595908, Size: 59452, Prev: 0, Next: 4143472, SanityCheck: 0
+Addr: 4143472, Size: 50815, Prev: 595908, Next: 0, SanityCheck 0:
+==List size: 2==
+```````````````````````````````````````````````````````````````````````````
+From inspection, this test passes as the remaining sizes of the free list
+is less than 80,000. On top of that, the references of the free list remained
+consistent with the kmalloc calls. (i.e. The next value of the head is addr value
+of the next).
+
+
+
+Memory Management Test 2:
+
+This test calls kfree on the currently allocated memory locations.
+For this demonstration we are using the memory that was allocated in Test 1. 
+We expect the memory blocks to be coalesced after calling kfree on all blocks
+and output the free mem list that equals the control.
+We can inspect this by comparing the control output (which is printing the 
+free list before any allocations) and the output after all the kfree's have
+been called. 
+
+To do this test, you have to replicate the test above but store each kmalloc'd
+address in an void pointer array (i.e. void *m[1000]). We know not all 1000
+
+
+OUTPUTS:
+```````````````````````````````````````````````````````````````````````````
+Our CONTROL output of free list:
+
+--==--printing free mem list--==--
+Addr: 39892, Size: 615452, Prev: 0, Next: 1662976, SanityCheck: 0
+Addr: 1662976, Size: 2531311, Prev: 39892, Next: 0, SanityCheck 0:
+==List size: 2==
+
+Output of the free list after the kmalloc calls:
+--==--printing free mem list--==--
+Addr: 595908, Size: 59452, Prev: 0, Next: 4143472, SanityCheck: 0
+Addr: 4143472, Size: 50815, Prev: 595908, Next: 0, SanityCheck 0:
+==List size: 2==
+
+Output of the free list after all kfree calls:
+--==--printing free mem list--==--
+Addr: 39892, Size: 615452, Prev: 0, Next: 1662976, SanityCheck: 0
+Addr: 1662976, Size: 2531311, Prev: 39892, Next: 0, SanityCheck 0:
+==List size: 2==
+
+Note: We also free'd them in non sequential order as well as calling 
+kfree on memory locations that had their memory already cleared.
+The output of the 2 separate tests is the same as shown above.
+
+By inspection, the 2 control output and the output after the kfree
+is the same. Therefore, this test passes.
+```````````````````````````````````````````````````````````````````````````
+
+Process Management Test 1:
+
+This test attempts to create more than 32 process's when the maximum number
+of process's that can be created is 32. The behaviour of this is undetermined,
+so the result is to ignore the create call, and continue the execution of the
+current process.
+
+To demonstrate this, we had a root process call syscreate() whos function is
+to call a dummy process that simply calls sysstop(). The root calls
+syscreate more than 32 times and then yield infinitely.
+
+OUTPUTS:
+```````````````````````````````````````````````````````````````````````````
+pcb is full
+pcb is full
+[...]
+pcb is full
+```````````````````````````````````````````````````````````````````````````
+From the results above, our create() function printed 'pcb is full' and returned 0
+to denote a failure in each attempted process creation, which is expected since 
+32 process's have been created.
+
+
+Process Management Test 2:
+
+This test creates an idle process that spawns 2 child processes, one called the
+Producer and the other the Consumer. The Producer simply prints "Happy 2019 " 15
+times and then yielding, and the Consumer simply prints "everyone" 15 times. This
+demonstrates that the kernel can manage multiple process's at once.
+
+To demonstrate this, you need to create a root process that calls sysscreate(),
+where the parameters is a function named 'producer' and a function named 'consumer'.
+The functionality of the two functions prints 'Happy 2019' and 'everyone' respectively,
+then calls sysyield. After the 15 iterations, it will call sysstop(). The root
+will infinitely call sysyield() after the 2 syscreate calls.
+
+OUTPUTS:
+```````````````````````````````````````````````````````````````````````````
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+Happy 2019 everyone
+
+```````````````````````````````````````````````````````````````````````````
+By inspection, the producer and consumer have successfully printed their values in the
+correct order. It has also demonstrated that the sysyield calls between the root, producer
+and consumer have successfully 
