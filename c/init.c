@@ -12,12 +12,9 @@ extern char *maxaddr;   /* max memory address (set in i386.c)	*/
 #if RUNTESTS
 static void runTests(void);
 static void testMemoryManagement(void);
-// static void testDispatch(void);
-// static void testContextSwitch(void);
-// static void testQueue(void);
-// static void printRreadyQueue(void);
-// static void printList(void);
-// static int getFreeListSize(void);
+static void testDispatch(void);
+static void testContextSwitch(void);
+static void testProcessManagement(void);
 
 void runTests()
 {
@@ -27,6 +24,7 @@ void runTests()
   testMemoryManagement();
   testDispatch();
   testContextSwitch();
+  testProcessManagement();
 }
 #endif
 
@@ -44,7 +42,7 @@ void initproc(void) /* The beginning */
   // initDispatch();
   // initContextSwitch();
 
-  // int pid = create(root, 4096);
+  // create(root, 4096);
 
   // dispatch();
 
@@ -95,16 +93,16 @@ void testKmalloc() {
   assert(kfree(m1) == 1);
 
   // 3. Allocate kmalloc size up to HOLESTART
-  size = 615420;
-  m1 = testKmallocUtil(size);
-  assert(m1 == freemem + sizeof(memHeader));
+  // size = 615400;
+  // m1 = testKmallocUtil(size);
+  // assert(m1 == freemem + sizeof(memHeader));
 
   // 4. Allocate something after HOLEEND
-  size = 300;
-  void *m2 = testKmallocUtil(size);
-  assert(m2 == HOLEEND + sizeof(memHeader));
-  assert(kfree(m1) == 1);
-  assert(kfree(m2) == 1);
+  // size = 300;
+  // void *m2 = testKmallocUtil(size);
+  // assert(m2 == HOLEEND + sizeof(memHeader));
+  // assert(kfree(m1) == 1);
+  // assert(kfree(m2) == 1);
 
   // 5. Allocate multiple memoryblocks
   printList();
@@ -196,7 +194,7 @@ void populateRegisters(void)
                    : "=m"(ret)
                    : "i"(INTERRUPT_CODE)
                    : "%eax");
-  sysstop();
+  //sysstop();
 }
 
 void testContextSwitch()
@@ -216,7 +214,7 @@ void testContextSwitch()
   assert(context->ebx == EBX);
 
   cleanup(test_process);
-  kprintf("contextSwitch() works successfully!");
+  kprintf("contextSwitch() works successfully!\n");
 }
 
 int getReadyQueueSize() {
@@ -229,6 +227,29 @@ int getReadyQueueSize() {
     iter = iter->next;
   }
   return count;
+}
+
+static volatile int max_num_processes = FALSE;
+static int process_number = 1;
+
+void testProcessManagementUtil(void)
+{
+  for(int i = 0; i<32; i++) {
+    kprintf("here\n");
+      syscreate(testProcessManagementUtil,1000);
+    }
+  sysstop();
+	
+}
+
+void testProcessManagement() {
+  // 1. Try and create more than 32 processes, it shouldn't be able to do it
+  for(int i = 0; i<60; i++) {
+    create(testProcessManagementUtil,1000);
+  }
+  int number_of_processes = MAX_PCB_SIZE - 1;
+  assert(getReadyQueueSize() == number_of_processes);
+  kprintf("process management works successfully!\n");
 }
 
 void testQueue()

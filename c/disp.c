@@ -24,12 +24,6 @@ extern void dispatch()
     for (pcb *process = next(); process;)
     {
 
-        // kprintf("whats in the ready_queue? %d\n", ready_queue->pid);
-        // if (ready_queue->pid == 2)
-        // {
-        //     break;
-        // }
-
         process->state = RUNNING;
         int request = contextSwitch(process);
         // kprintf("request value: %d\n", request);
@@ -40,7 +34,7 @@ extern void dispatch()
             parameters = (va_list)ctx->edx;
             fp = (void *)va_arg(parameters, int);
             stack = va_arg(parameters, int);
-            int pid = create(fp, stack);
+            ctx->eax = create(fp, stack);
 
             break;
         case YIELD:

@@ -9,7 +9,7 @@ extern int create(void (*func)(void), int stack)
     pcb *proc_to_create;
     contextFrame *context;
     int i;
-    for (i = 0; i < MAX_PCB_SIZE; i++)
+    for (i = 1; i <= MAX_PCB_SIZE; i++)
     {
         if (list_of_pcbs[i].state == STOPPED)
         {
@@ -18,11 +18,9 @@ extern int create(void (*func)(void), int stack)
             break;
         }
     }
-    if (i >= MAX_PCB_SIZE)
+    if (i > MAX_PCB_SIZE)
     {
-        // no PCB is found
-        kprintf("pcb full\n");
-        return -1;
+        return 0;
     }
     // allocate memory for stack
     unsigned char *proc_pointer = kmalloc(stack);

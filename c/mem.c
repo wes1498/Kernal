@@ -183,16 +183,3 @@ extern int kfree(void *ptr)
     return 1;
 }
 
-void printListt()
-{
-  int i = 0;
-  memHeader *node = head;
-  kprintf("--==--printing free mem list--==--\n");
-  while (node)
-  {
-    printHeader(node);
-    i++;
-    node = node->next;
-  }
-  kprintf("==List size: %d==\n", i);
-}

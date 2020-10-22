@@ -3,7 +3,8 @@
 
 #include <xeroskernel.h>
 #include <i386.h>
-#define STACKSIZE 4096
+#define STACKSIZE 1000
+
 
 /* Your code goes here */
 /* user.c : User processes
@@ -19,7 +20,7 @@ void producer(void)
 {
 	for (int i = 0; i < 15; i++)
 	{
-		kprintf("Happy 2019 \n");
+		kprintf("Happy 2019 ");
 		sysyield();
 	}
 	sysstop();
@@ -37,16 +38,12 @@ void consumer(void)
 void root(void)
 {
 	kprintf("Got to user code successfully\n");
-
-	//syscreate(dummyproc, 4097);
 	syscreate(producer, STACKSIZE);
 	syscreate(consumer, STACKSIZE);
-
-	// (very!) basic kmalloc/kfree
-	void *ptr = kmalloc(32);
-	kfree(ptr);
 	for (;;)
 	{
 		sysyield();
 	}
 }
+
+

@@ -47,10 +47,13 @@ typedef unsigned int size_t; /* Something that can hold the value of
 
 /* Test Toggle */
 #define RUNTESTS 1
-#define assert(C); \
-  if (!(C)) {\
-    kprintf("Line Failure at: %u, (%s)\n", __LINE__, xstr(C));\
-    for(;;);\
+#define assert(C)                                              \
+  ;                                                            \
+  if (!(C))                                                    \
+  {                                                            \
+    kprintf("Line Failure at: %u, (%s)\n", __LINE__, xstr(C)); \
+    for (;;)                                                   \
+      ;                                                        \
   }
 
 /* Functions defined by startup code */
@@ -67,39 +70,35 @@ void set_evec(unsigned int xnum, unsigned long handler);
 
 typedef struct mem_header
 {
-    unsigned long size;
-    struct mem_header *prev;
-    struct mem_header *next;
-    char *sanityCheck;
-    unsigned char datastart[0];
+  unsigned long size;
+  struct mem_header *prev;
+  struct mem_header *next;
+  char *sanityCheck;
+  unsigned char datastart[0];
 } memHeader;
 
 typedef struct context_frame
 {
-    unsigned int edi;
-    unsigned int esi;
-    unsigned int ebp;
-    unsigned int esp;
-    unsigned int ebx;
-    unsigned int edx;
-    unsigned int ecx;
-    unsigned int eax;
-    unsigned int iret_eip;
-    unsigned int iret_cs;
-    unsigned int eflags;
-}contextFrame;
+  unsigned int edi;
+  unsigned int esi;
+  unsigned int ebp;
+  unsigned int esp;
+  unsigned int ebx;
+  unsigned int edx;
+  unsigned int ecx;
+  unsigned int eax;
+  unsigned int iret_eip;
+  unsigned int iret_cs;
+  unsigned int eflags;
+} contextFrame;
 
 typedef struct pcb
 {
-    int pid;
-    int state;
-    // removed context struct because
-    // esp points to it/
-    // you can recover context by casting esp to the context struct
-    // context = (struct context_frame*) (proc_to_create->esp);
-    unsigned long esp;
-    void *proc_locn;
-    struct pcb *next;
+  int pid;
+  int state;
+  unsigned long esp;
+  void *proc_locn;
+  struct pcb *next;
 } pcb;
 // mem.c prototypes
 extern void kmeminit(void);
