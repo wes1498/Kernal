@@ -30,7 +30,7 @@ typedef unsigned int size_t; /* Something that can hold the value of
 
 /* global vars definitions */
 #define MAX_PCB_SIZE 32
-#define MAX_PROC_SIZE 16
+
 /* Process State values */
 #define READY 1
 #define RUNNING 2
@@ -42,11 +42,11 @@ typedef unsigned int size_t; /* Something that can hold the value of
 #define YIELD 2
 #define STOP 3
 
-/* Interrupt Code */
+/* Interrupt Service Code */
 #define INTERRUPT_CODE 69
 
 /* Test Toggle */
-#define RUNTESTS 1
+#define RUNTESTS 0
 #define assert(C)                                              \
   ;                                                            \
   if (!(C))                                                    \
@@ -100,6 +100,7 @@ typedef struct pcb
   void *proc_locn;
   struct pcb *next;
 } pcb;
+
 // mem.c prototypes
 extern void kmeminit(void);
 extern void *kmalloc(size_t size);
@@ -123,13 +124,13 @@ extern int create(void (*func)(void), int stack);
 extern int contextSwitch(pcb *proc);
 void initContextSwitch(void);
 
-// syscall.c prototype
+// syscall.c prototypes
 extern int syscall(int call, ...);
 extern unsigned int syscreate(void (*func)(void), int stack);
 extern void sysyield(void);
 extern void sysstop(void);
 
-// user.c prototype
+// user.c prototypes
 extern void root(void);
 
 /* Anything you add must be between the #define and this comment */

@@ -6,11 +6,16 @@
 extern long freemem; /* start of free memory (set in i386.c) */
 extern long maxaddr; /* max addr of kernel memory */
 
-// dont know if this head is accessible outside of mem.c ??
-// or if we need it accessible outisde???
 memHeader *head;
 
-/* Your code goes here */
+/* 
+    name: kmeminit
+    args:
+    returns:
+    note: Initializes the free memory that process's can allocate
+        Ensure the free memory does not overlap with the HOLE
+            
+ */
 extern void kmeminit(void)
 {
     /* init head */
@@ -32,6 +37,12 @@ extern void kmeminit(void)
     next_node->sanityCheck = NULL;
 }
 
+/* 
+    name: kmalloc
+    args:   size    - amount of memory to allocate
+    returns: address of the usable memory
+    note: 
+ */
 extern void *kmalloc(size_t size)
 {
     long amnt;
@@ -85,6 +96,12 @@ extern void *kmalloc(size_t size)
     return node_to_alloc->datastart;
 }
 
+/* 
+    name: defragMemory
+    args:   node_to_free - the address of the address including its header
+    returns:
+    note: Coalesces the adjacent free memory from node_to_free if possible
+ */
 void defragMemory(memHeader *node_to_free)
 {
     // Defrag with left adjacent memory
@@ -120,12 +137,21 @@ void defragMemory(memHeader *node_to_free)
     }
 }
 
+/* 
+    name: kfree
+    args:   ptr - pointer to the address of the location
+    returns: 1 on a successful deallocation, 0 on error
+    note: adjacent memory locations that are free will be coalesced
+ */
 extern int kfree(void *ptr)
 {
     // Grab the start of the allocated memory area
     // ptr = dataStart[0]
     //
-    if(ptr == NULL){return 0;}
+    if (ptr == NULL)
+    {
+        return 0;
+    }
     memHeader *node_to_free = (memHeader *)(ptr - sizeof(memHeader));
     // kprintf("value of node_to_free: %ld\n", node_to_free);
     memHeader *head_cpy = head;
@@ -182,4 +208,3 @@ extern int kfree(void *ptr)
 
     return 1;
 }
-

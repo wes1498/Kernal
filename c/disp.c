@@ -9,12 +9,25 @@ void initPCBs(void);
 void readyEnqueue(pcb *proc);
 pcb *readyDequeue(void);
 
+/* 
+    name: initDispatch
+    args:
+    returns:
+    note: Initializes the process's and the ready queue
+ */
 extern void initDispatch()
 {
     initPCBs();
     initQueue();
 }
 
+/* 
+    name: dispatch
+    args:
+    returns:
+    note:   an infinite loop that cycles through the process's in the ready queue
+            and servicing them as needed.
+ */
 extern void dispatch()
 {
     va_list parameters;
@@ -50,6 +63,12 @@ extern void dispatch()
     }
 }
 
+/* 
+    name: initQueue
+    args:
+    returns:
+    note: sets the queue to be empty
+ */
 void initQueue()
 {
     // ready queue will be set to null. Logic will be, if a PCB enters the ready queue, we just set the value of ready queue to the mem location of that process.
@@ -58,6 +77,12 @@ void initQueue()
     ready_queue = 0;
 }
 
+/* 
+    name: initPCBs
+    args:
+    returns:
+    note: Initializes all 32 process's PID's and setting them to the STOPPED state
+ */
 void initPCBs()
 {
     // init list_of_pcbs with dead process's
@@ -69,17 +94,36 @@ void initPCBs()
     }
 }
 
+/* 
+    name: next
+    args:
+    returns:
+    note: dequeues and returns the next process in the queue. 
+ */
 pcb *next()
 {
     // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
     // kprintf("first in ready queue: %d\n", readyDequeue()->pid);
     return readyDequeue();
 }
+
+/* 
+    name: ready
+    args: proc - the process to be inserted in the ready queue
+    returns:
+    note: enqueues the process and sets its state to READY
+ */
 extern void ready(pcb *proc)
 {
     readyEnqueue(proc);
 }
 
+/* 
+    name: cleanup
+    args: proc - the process to be deallocated and put in the STOPPED state
+    returns:
+    note: deallocates the memory that was kmalloc'd in proc and sets the state to STOPPED
+ */
 extern void cleanup(pcb *proc)
 {
     kfree(proc->proc_locn);
@@ -94,6 +138,7 @@ extern void cleanup(pcb *proc)
 =====================================
 */
 
+// inserts the proc to the queue
 void readyEnqueue(pcb *proc)
 {
     // if ready queue is NOT empty
@@ -118,6 +163,7 @@ void readyEnqueue(pcb *proc)
     proc->state = READY;
 }
 
+// dequeues and returns the proc to the queue
 pcb *readyDequeue()
 {
     if (ready_queue)

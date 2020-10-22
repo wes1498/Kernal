@@ -37,14 +37,14 @@ void initproc(void) /* The beginning */
   runTests();
 #endif
 
-  // kmeminit();
+  kmeminit();
 
-  // initDispatch();
-  // initContextSwitch();
+  initDispatch();
+  initContextSwitch();
 
-  // create(root, 4096);
+  create(root, 4096);
 
-  // dispatch();
+  dispatch();
 
   /* Add all of your code before this comment and after the previous comment */
   /* This code should never be reached after you are done */
@@ -79,7 +79,8 @@ void *testKmallocUtil(size_t size)
   return m1;
 }
 
-void testKmalloc() {
+void testKmalloc()
+{
   // 1. Test for simple case of kmalloc
   int size = 300;
   void *m1 = testKmallocUtil(size);
@@ -141,26 +142,27 @@ int getFreeListSize()
   return count;
 }
 
-void testKfree() {
+void testKfree()
+{
   // 1. initial free list is 2 (Before and After HOLE)
   assert(getFreeListSize() == 2);
 
   // 2. fill the memory before HOLE
-  void* m1 = NULL;
+  void *m1 = NULL;
 
   // 4. kfree on NULL or unallocated memory
   assert(kfree(m1) == 0);
-  assert(kfree((void*)0x100) == 0);
+  assert(kfree((void *)0x100) == 0);
 
   m1 = kmalloc(300);
-  void* m2 = kmalloc(300);
-  void* m3 = kmalloc(300);
+  void *m2 = kmalloc(300);
+  void *m3 = kmalloc(300);
 
   // 5. free with no coalesce
   kfree(m1);
   assert(getFreeListSize() == 3);
 
-  // 6. assert should consider coalesce 
+  // 6. assert should consider coalesce
   kfree(m2);
   assert(getFreeListSize() == 3);
   kfree(m3);
@@ -177,7 +179,6 @@ void testDispatch()
 {
   testQueue();
   kprintf("Ready Queue works successfully!\n");
-
 }
 
 void populateRegisters(void)
@@ -217,7 +218,8 @@ void testContextSwitch()
   kprintf("contextSwitch() works successfully!\n");
 }
 
-int getReadyQueueSize() {
+int getReadyQueueSize()
+{
   pcb *iter = ready_queue;
   int count = 0;
 
@@ -234,18 +236,20 @@ static int process_number = 1;
 
 void testProcessManagementUtil(void)
 {
-  for(int i = 0; i<32; i++) {
+  for (int i = 0; i < 32; i++)
+  {
     kprintf("here\n");
-      syscreate(testProcessManagementUtil,1000);
-    }
+    syscreate(testProcessManagementUtil, 1000);
+  }
   sysstop();
-	
 }
 
-void testProcessManagement() {
+void testProcessManagement()
+{
   // 1. Try and create more than 32 processes, it shouldn't be able to do it
-  for(int i = 0; i<60; i++) {
-    create(testProcessManagementUtil,1000);
+  for (int i = 0; i < 60; i++)
+  {
+    create(testProcessManagementUtil, 1000);
   }
   int number_of_processes = MAX_PCB_SIZE - 1;
   assert(getReadyQueueSize() == number_of_processes);
@@ -257,7 +261,7 @@ void testQueue()
   // 1. Ready queue is initially empty
   assert(getReadyQueueSize() == 0);
   pcb test1 = list_of_pcbs[0];
-  pcb* test1_cpy = &test1;
+  pcb *test1_cpy = &test1;
   test1.state = READY;
   pcb test2 = list_of_pcbs[1];
   test2.state = READY;

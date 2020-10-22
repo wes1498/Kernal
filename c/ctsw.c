@@ -17,12 +17,23 @@ unsigned int call;
 
 void printRegisters(pcb *);
 
-// Setup the IDT to map interrupt INTERRUPT to _ISREntryPoint
+/* 
+    name: initContextSwitch
+    args:
+    returns:
+    note: Sets up the IDT to map interrupt INTERRUPT to _ISREntryPoint
+ */
 void initContextSwitch(void)
 {
    set_evec(INTERRUPT_CODE, (unsigned long)_ISREntryPoint);
 }
 
+/* 
+    name:       contextSwitch
+    args:       proc - the current process whose state is RUNNING
+    returns:    the system call value of the process.
+    note:       
+ */
 extern int contextSwitch(pcb *proc)
 {
    // set global process stack pointer
@@ -54,6 +65,7 @@ extern int contextSwitch(pcb *proc)
    return context->eax;
 }
 
+// testing function to inspect a process's registers.
 void printRegisters(pcb *proc)
 {
    contextFrame *context = (contextFrame *)proc->esp;

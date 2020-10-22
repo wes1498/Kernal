@@ -3,7 +3,14 @@
 
 #include <xeroskernel.h>
 
-/* Your code goes here. */
+/* 
+    name: create
+    args:   func  - the function pointer
+            stack - the size of the stack to allocate
+    returns: 0 if no process's can be allocated
+            >0 if a process was allocated and set to the ready queue
+    note: fdk
+ */
 extern int create(void (*func)(void), int stack)
 {
     pcb *proc_to_create;
@@ -54,14 +61,7 @@ extern int create(void (*func)(void), int stack)
 
     proc_to_create->proc_locn = proc_pointer;
     // put proc in ready_queue
-    
+
     ready(proc_to_create);
     return proc_to_create->pid;
-
-    // kprintf("pcbs %d\n pid = %d, state = %d, esp = %ld, proc_stack = %ld\n\n",
-    //         i,
-    //         list_of_pcbs[0].pid,
-    //         list_of_pcbs[0].state,
-    //         list_of_pcbs[0].esp,
-    //         list_of_pcbs[0].proc_locn);
 }
