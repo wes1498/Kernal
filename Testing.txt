@@ -198,12 +198,6 @@ and consumer have successfully
 
 Testing Methodologies and Conclusion:
 
-Also describe in two or three paragraphs, the overall testing
-methodologies that you used for the completed kernel and why you 
-are confident your kernel works.
-
-/********************************************************/**********************
-
 Our testing methodologies were simple but effective. In developing the memory 
 management portion, we focused primarily on printing the freelist memory each 
 time we kmalloc'd or kfree'd. This not only helped us create a mental picture 
