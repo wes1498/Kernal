@@ -32,10 +32,7 @@ extern int syscall(int call, ...)
                      : "=m"(output)
                      : "m"(call), "m"(valist), "i"(INTERRUPT_CODE)
                      : "%eax");
-    if (output != 2)
-    {
-        kprintf("PID IS: %d\n", output);
-    }
+
     return output;
 }
 

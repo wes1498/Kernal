@@ -67,7 +67,7 @@ extern void *kmalloc(size_t size)
 
     node_to_alloc->sanityCheck = (char *)node_to_alloc;
     // divide by 16 so it gets 16-byte aligned
-    new_node = (unsigned long)node_to_alloc + amnt;
+    new_node = (memHeader *)((unsigned long)node_to_alloc + amnt);
     new_node->size = node_to_alloc->size - amnt;
     new_node->sanityCheck = 0;
 

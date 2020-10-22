@@ -55,7 +55,7 @@ void consumer(void)
  */
 void root(void)
 {
-	kprintf("Got to user code successfully\n");
+	// kprintf("Got to user code successfully\n");
 	syscreate(producer, STACKSIZE);
 	syscreate(consumer, STACKSIZE);
 	for (;;)
